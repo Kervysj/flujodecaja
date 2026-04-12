@@ -9,108 +9,27 @@
         :root {
             --bg: #0b0f1a;
             --card: rgba(23, 32, 53, 0.8);
-            --cyan: #22d3ee;   /* Disponible / Ingresos */
-            --red: #fb7185;    /* Deudas / Egresos */
-            --amber: #fbbf24;  /* Dinero en Calle (Clientes) */
-            --green: #4ade80;  /* Éxito / Solvente */
+            --cyan: #22d3ee;
+            --red: #fb7185;
+            --amber: #fbbf24;
+            --green: #4ade80;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: #e2e8f0;
-            margin: 0;
-            padding-bottom: 50px;
-        }
-
-        /* Indicadores Superiores */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            padding: 15px;
-            position: sticky;
-            top: 0;
-            background: var(--bg);
-            z-index: 100;
-        }
-
-        .mini-card {
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-bottom: 3px solid transparent;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #e2e8f0; margin: 0; padding-bottom: 50px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .mini-card { padding: 12px; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: bold; border-bottom: 3px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .c-verde { background: rgba(34, 211, 238, 0.1); border-color: var(--cyan); color: var(--cyan); }
         .c-rojo { background: rgba(251, 113, 133, 0.1); border-color: var(--red); color: var(--red); }
         .c-amarillo { background: rgba(251, 191, 36, 0.1); border-color: var(--amber); color: var(--amber); }
-
         .val { display: block; font-size: 1.1rem; margin-top: 5px; }
-
         .container { padding: 15px; }
-
-        /* Tarjetas de Gráficos y Listas */
-        .card {
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        /* Botonera Principal */
-        .action-btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 18px;
-            border-radius: 15px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-
+        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); }
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .btn { padding: 18px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn-in { background: var(--cyan); color: #0b0f1a; }
         .btn-out { background: var(--red); color: #0b0f1a; }
-
-        /* Formulario */
         .modal { display: none; }
-        input, select {
-            width: 100%; padding: 14px; margin: 8px 0;
-            background: #1e293b; border: 1px solid #334155;
-            color: white; border-radius: 10px; box-sizing: border-box;
-            font-size: 1rem;
-        }
-
-        /* Lista de Personas */
-        .person-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            background: rgba(255,255,255,0.03);
-            margin-bottom: 10px;
-            border-radius: 15px;
-            border-left: 4px solid transparent;
-        }
-
-        .status-badge {
-            font-size: 0.8rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: bold;
-        }
+        input, select { width: 100%; padding: 14px; margin: 8px 0; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 10px; box-sizing: border-box; }
+        .person-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); margin-bottom: 10px; border-radius: 15px; border-left: 4px solid transparent; }
     </style>
 </head>
 <body>
@@ -122,9 +41,7 @@
 </div>
 
 <div class="container">
-    
     <div class="card" style="text-align:center;">
-        <h4 style="margin-top:0; color: #94a3b8;">Balance de Riesgo</h4>
         <canvas id="mainChart" height="200"></canvas>
     </div>
 
@@ -135,7 +52,6 @@
 
     <div id="form-container" class="card modal">
         <h3 id="form-title" style="margin-top:0; color: var(--cyan);">Nuevo Registro</h3>
-        <label>Tipo de Operación</label>
         <select id="f-tipo">
             <option value="Ingreso">Venta / Ingreso Directo</option>
             <option value="Abono_Prov">Abonar a Proveedor (Pago)</option>
@@ -143,24 +59,19 @@
             <option value="Cobro_Cli">Cobro a Cliente (Entra Dinero)</option>
             <option value="Fiado_Cli">Dar Fiado (Dinero a la calle)</option>
         </select>
-        
         <input type="text" id="f-benef" placeholder="Nombre de Persona / Empresa">
         <input type="number" id="f-monto" placeholder="Monto en $">
-        <input type="text" id="f-ref" placeholder="Referencia / Pago Móvil / Efectivo">
-        <input type="text" id="f-conc" placeholder="Concepto (Ej: Pago Harina)">
-        
+        <input type="text" id="f-ref" placeholder="Referencia / Pago Móvil">
+        <input type="text" id="f-conc" placeholder="Concepto">
         <button class="btn btn-in" style="width:100%; margin-top:10px;" onclick="enviar()">CONFIRMAR REGISTRO</button>
         <button class="btn" style="width:100%; background:transparent; color:#94a3b8" onclick="hideForm()">Cancelar</button>
     </div>
 
-    <h3 style="color: #94a3b8; font-size: 1rem;">ESTADO DE CUENTAS DETALLADO</h3>
-    <div id="lista-personas">
-        </div>
-
+    <h3 style="color: #94a3b8; font-size: 1rem;">ESTADO DE CUENTAS</h3>
+    <div id="lista-personas"></div>
 </div>
 
 <script>
-    // URL ACTUALIZADA POR EL USUARIO
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoJjRvVqz5LBiwV5Qz2R1pVgX6MK5BrtYTP37jgy_uE9Si1Mk713Uod9g1-UErHb1E/exec";
 
     window.onload = fetchData;
@@ -170,30 +81,41 @@
             const resp = await fetch(SCRIPT_URL);
             const d = await resp.json();
             actualizarDashboard(d);
-        } catch (e) { console.error("Error al obtener datos"); }
+        } catch (e) { alert("Error al conectar con Google Sheets"); }
     }
 
     function actualizarDashboard(data) {
         let totalDeuda = 0;
         let totalCalle = 0;
+        let disponible = 0;
+        
         const container = document.getElementById('lista-personas');
         container.innerHTML = '';
 
-        // Procesar Proveedores (Rojo)
+        // 1. CALCULAR EL DISPONIBLE REAL DESDE MOVIMIENTOS
+        data.movimientos.forEach(m => {
+            let tipo = m[1];
+            let monto = parseFloat(m[3]) || 0;
+            if (tipo === "Ingreso" || tipo === "Cobro_Cli") disponible += monto;
+            if (tipo === "Abono_Prov" || tipo === "Egreso") disponible -= monto;
+        });
+
+        // 2. PROCESAR PROVEEDORES
         data.proveedores.slice(1).forEach(p => {
             const saldo = parseFloat(p[2]) || 0;
             totalDeuda += saldo;
-            if (saldo > 0 || saldo < 0) crearTarjeta(p[0], saldo, 'var(--red)', 'PROVEEDOR');
-            else crearTarjeta(p[0], saldo, 'var(--green)', 'SOLVENTE');
+            crearTarjeta(p[0], saldo, saldo > 0 ? 'var(--red)' : 'var(--green)', 'PROVEEDOR');
         });
 
-        // Procesar Clientes (Amarillo)
+        // 3. PROCESAR CLIENTES
         data.clientes.slice(1).forEach(c => {
             const saldo = parseFloat(c[2]) || 0;
             totalCalle += saldo;
-            if (saldo > 0) crearTarjeta(c[0], saldo, 'var(--amber)', 'CLIENTE');
+            crearTarjeta(c[0], saldo, 'var(--amber)', 'CLIENTE');
         });
 
+        // ACTUALIZAR NÚMEROS EN PANTALLA
+        document.getElementById('sum-disp').innerText = `$ ${disponible.toFixed(2)}`;
         document.getElementById('sum-deuda').innerText = `$ ${totalDeuda.toFixed(2)}`;
         document.getElementById('sum-calle').innerText = `$ ${totalCalle.toFixed(2)}`;
         
@@ -204,18 +126,8 @@
         const div = document.createElement('div');
         div.className = 'person-item';
         div.style.borderLeftColor = color;
-        
-        const icono = monto <= 0 ? '✅' : '🔔';
-        
-        div.innerHTML = `
-            <div>
-                <div style="font-weight:bold;">${icono} ${nombre}</div>
-                <small style="color:#64748b;">${etiqueta}</small>
-            </div>
-            <div style="text-align:right;">
-                <div style="color:${color}; font-weight:bold;">$${Math.abs(monto).toFixed(2)}</div>
-            </div>
-        `;
+        div.innerHTML = `<div><b>${nombre}</b><br><small>${etiqueta}</small></div>
+                         <div style="color:${color}; font-weight:bold;">$${Math.abs(monto).toFixed(2)}</div>`;
         document.getElementById('lista-personas').appendChild(div);
     }
 
@@ -225,34 +137,20 @@
         window.myChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Deuda (Rojo)', 'En Calle (Amarillo)'],
-                datasets: [{
-                    data: [deuda, calle],
-                    backgroundColor: ['#fb7185', '#fbbf24'],
-                    hoverOffset: 4,
-                    borderWidth: 0
-                }]
+                labels: ['Deuda', 'Calle'],
+                datasets: [{ data: [deuda, calle], backgroundColor: ['#fb7185', '#fbbf24'], borderWidth: 0 }]
             },
-            options: {
-                plugins: { legend: { display: false } },
-                cutout: '70%'
-            }
+            options: { plugins: { legend: { display: false } }, cutout: '70%' }
         });
     }
 
-    function showForm(type) {
-        document.getElementById('form-container').style.display = 'block';
-        document.getElementById('form-title').innerText = type === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida';
-        window.scrollTo(0, 500);
-    }
-
+    function showForm(type) { document.getElementById('form-container').style.display = 'block'; }
     function hideForm() { document.getElementById('form-container').style.display = 'none'; }
 
     async function enviar() {
         const btn = event.target;
         btn.innerText = "PROCESANDO...";
         btn.disabled = true;
-
         const payload = {
             tipo: document.getElementById('f-tipo').value,
             beneficiario: document.getElementById('f-benef').value,
@@ -260,22 +158,12 @@
             referencia: document.getElementById('f-ref').value,
             concepto: document.getElementById('f-conc').value
         };
-
         try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            });
-            alert("¡Sincronizado con éxito!");
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("¡Sincronizado!");
             location.reload();
-        } catch (e) {
-            alert("Error al guardar. Verifica la conexión.");
-            btn.disabled = false;
-            btn.innerText = "REINTENTAR";
-        }
+        } catch (e) { alert("Error"); btn.disabled = false; }
     }
 </script>
-
 </body>
 </html>
