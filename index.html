@@ -2,168 +2,256 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Dashboard - Richard Morales</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AdriSweets Pro - Gestión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0f1a;
-            --card: rgba(23, 32, 53, 0.8);
-            --cyan: #22d3ee;
-            --red: #fb7185;
-            --amber: #fbbf24;
-            --green: #4ade80;
+            --bg: #05070a;
+            --card: #111827;
+            --cyan: #06b6d4;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --green: #10b981;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #e2e8f0; margin: 0; padding-bottom: 50px; }
-        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .mini-card { padding: 12px; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: bold; border-bottom: 3px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .c-verde { background: rgba(34, 211, 238, 0.1); border-color: var(--cyan); color: var(--cyan); }
-        .c-rojo { background: rgba(251, 113, 133, 0.1); border-color: var(--red); color: var(--red); }
-        .c-amarillo { background: rgba(251, 191, 36, 0.1); border-color: var(--amber); color: var(--amber); }
-        .val { display: block; font-size: 1.1rem; margin-top: 5px; }
-        .container { padding: 15px; }
-        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); }
-        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .btn { padding: 18px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .btn-in { background: var(--cyan); color: #0b0f1a; }
-        .btn-out { background: var(--red); color: #0b0f1a; }
-        .modal { display: none; }
-        input, select { width: 100%; padding: 14px; margin: 8px 0; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 10px; box-sizing: border-box; }
-        .person-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); margin-bottom: 10px; border-radius: 15px; border-left: 4px solid transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        /* Pantalla de Carga */
+        #loader {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: var(--bg); display: flex; justify-content: center;
+            align-items: center; z-index: 2000;
+        }
+
+        /* Dashboard de Capital */
+        .header {
+            padding: 35px 20px;
+            background: linear-gradient(180deg, #0f172a 0%, var(--bg) 100%);
+            text-align: center;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        .tasa-tag {
+            font-family: 'Orbitron';
+            font-size: 0.7rem;
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            padding: 4px 12px;
+            border-radius: 50px;
+            text-transform: uppercase;
+        }
+
+        .main-balance {
+            font-family: 'Orbitron';
+            font-size: 2.3rem;
+            margin: 15px 0 5px;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .usd-alt { color: var(--text-dim); font-size: 1.1rem; font-weight: 300; }
+
+        /* Vistas y Navegación */
+        .view { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .kpi-card {
+            background: var(--card); padding: 15px; border-radius: 18px;
+            border-top: 3px solid #334155;
+        }
+        .kpi-card.red { border-color: var(--rose); }
+        .kpi-card.amber { border-color: var(--amber); }
+        .kpi-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .kpi-val { font-size: 1.1rem; font-weight: 700; margin-top: 5px; font-family: 'Orbitron'; }
+
+        /* Estilo de Listas */
+        .item-row {
+            background: var(--card); padding: 16px; border-radius: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.03);
+        }
+        .item-name { font-weight: 600; font-size: 0.95rem; }
+        .item-sub { font-size: 0.7rem; color: var(--text-dim); display: block; }
+        .item-price { font-family: 'Orbitron'; font-weight: bold; }
+
+        /* Barra de Navegación */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%;
+            background: #0f172a; display: flex; justify-content: space-around;
+            padding: 12px 0; border-top: 1px solid #1f2937; z-index: 1000;
+        }
+        .nav-btn {
+            background: none; border: none; color: #64748b;
+            font-size: 0.6rem; font-weight: bold; text-transform: uppercase;
+        }
+        .nav-btn.active { color: var(--cyan); }
+
+        /* Formulario Estilizado */
+        .form-box { background: var(--card); padding: 20px; border-radius: 20px; }
+        input, select {
+            width: 100%; padding: 14px; margin: 10px 0;
+            background: #1f2937; border: 1px solid #374151;
+            color: #fff; border-radius: 12px; box-sizing: border-box; font-size: 1rem;
+        }
+        .btn-main {
+            width: 100%; padding: 16px; background: var(--cyan);
+            color: #000; border: none; border-radius: 12px;
+            font-weight: 800; font-size: 1rem; margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-<div class="summary-grid">
-    <div class="mini-card c-verde">DISPONIBLE <span class="val" id="sum-disp">$0.00</span></div>
-    <div class="mini-card c-rojo">DEUDAS <span class="val" id="sum-deuda">$0.00</span></div>
-    <div class="mini-card c-amarillo">EN CALLE <span class="val" id="sum-calle">$0.00</span></div>
-</div>
+    <div id="loader">CARGANDO DATOS...</div>
 
-<div class="container">
-    <div class="card" style="text-align:center;">
-        <canvas id="mainChart" height="200"></canvas>
+    <div class="header">
+        <span class="tasa-tag">BCV: <span id="tasa-val">0.00</span> Bs</span>
+        <div class="main-balance" id="disp-bs">0.00 Bs</div>
+        <div class="usd-alt" id="disp-usd">≈ 0.00 $</div>
     </div>
 
-    <div class="action-btns">
-        <button class="btn btn-in" onclick="showForm('entrada')">⊕ REGISTRAR ENTRADA</button>
-        <button class="btn btn-out" onclick="showForm('salida')">⊖ REGISTRAR SALIDA</button>
+    <div id="v-caja" class="view active">
+        <div class="kpi-grid">
+            <div class="kpi-card red">
+                <div class="kpi-label">Debes (Prov)</div>
+                <div class="kpi-val" id="val-deuda" style="color:var(--rose)">0 Bs</div>
+            </div>
+            <div class="kpi-card amber">
+                <div class="kpi-label">En Calle (Cli)</div>
+                <div class="kpi-val" id="val-calle" style="color:var(--amber)">0 Bs</div>
+            </div>
+        </div>
+        <h4 style="color: var(--text-dim); margin-bottom: 10px;">Últimos Movimientos</h4>
+        <div id="mini-movs"></div>
     </div>
 
-    <div id="form-container" class="card modal">
-        <h3 id="form-title" style="margin-top:0; color: var(--cyan);">Nuevo Registro</h3>
-        <select id="f-tipo">
-            <option value="Ingreso">Venta / Ingreso Directo</option>
-            <option value="Abono_Prov">Abonar a Proveedor (Pago)</option>
-            <option value="Deuda_Prov">Cargar Deuda (Compra a crédito)</option>
-            <option value="Cobro_Cli">Cobro a Cliente (Entra Dinero)</option>
-            <option value="Fiado_Cli">Dar Fiado (Dinero a la calle)</option>
-        </select>
-        <input type="text" id="f-benef" placeholder="Nombre de Persona / Empresa">
-        <input type="number" id="f-monto" placeholder="Monto en $">
-        <input type="text" id="f-ref" placeholder="Referencia / Pago Móvil">
-        <input type="text" id="f-conc" placeholder="Concepto">
-        <button class="btn btn-in" style="width:100%; margin-top:10px;" onclick="enviar()">CONFIRMAR REGISTRO</button>
-        <button class="btn" style="width:100%; background:transparent; color:#94a3b8" onclick="hideForm()">Cancelar</button>
+    <div id="v-prov" class="view">
+        <h3 style="margin-top:0;">Lista de Proveedores</h3>
+        <div id="list-prov"></div>
     </div>
 
-    <h3 style="color: #94a3b8; font-size: 1rem;">ESTADO DE CUENTAS</h3>
-    <div id="lista-personas"></div>
-</div>
+    <div id="v-cli" class="view">
+        <h3 style="margin-top:0;">Lista de Clientes</h3>
+        <div id="list-cli"></div>
+    </div>
 
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoJjRvVqz5LBiwV5Qz2R1pVgX6MK5BrtYTP37jgy_uE9Si1Mk713Uod9g1-UErHb1E/exec";
+    <div id="v-reg" class="view">
+        <div class="form-box">
+            <h3 style="margin-top:0; color: var(--cyan);">Nuevo Registro</h3>
+            <select id="f-tipo">
+                <option value="Ingreso">Venta (Entra Efectivo/Transferencia)</option>
+                <option value="Abono_Prov">Pagar a Proveedor (Sale Bs)</option>
+                <option value="Deuda_Prov">Nueva Deuda (Suma a lo que debes)</option>
+                <option value="Cobro_Cli">Cobro a Cliente (Entra Bs de la calle)</option>
+                <option value="Fiado_Cli">Dar Fiado (Dinero a la calle)</option>
+                <option value="Egreso">Gasto del Negocio (Luz, Alquiler, etc)</option>
+            </select>
+            <input type="text" id="f-benef" placeholder="Nombre (Ej: Polar o Juan)">
+            <input type="number" id="f-monto" placeholder="Monto en Bolívares (Bs)">
+            <input type="text" id="f-ref" placeholder="Referencia / Pago Móvil">
+            <button class="btn-main" onclick="enviarOperacion()">GUARDAR EN SISTEMA</button>
+        </div>
+    </div>
 
-    window.onload = fetchData;
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="nav('v-caja', this)">Caja</button>
+        <button class="nav-btn" onclick="nav('v-prov', this)">Prov</button>
+        <button class="nav-btn" onclick="nav('v-cli', this)">Clientes</button>
+        <button class="nav-btn" onclick="nav('v-reg', this)">Registrar</button>
+    </nav>
 
-    async function fetchData() {
-        try {
-            const resp = await fetch(SCRIPT_URL);
-            const d = await resp.json();
-            actualizarDashboard(d);
-        } catch (e) { alert("Error al conectar con Google Sheets"); }
-    }
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbxrdIQZAhTjNWqnyyOr9JD7Q4FohkTeMWXorTdJ9I7RedWJlBCnQwYq--y56LzTVmE5/exec";
+        let tasaBCV = 1;
 
-    function actualizarDashboard(data) {
-        let totalDeuda = 0;
-        let totalCalle = 0;
-        let disponible = 0;
-        
-        const container = document.getElementById('lista-personas');
-        container.innerHTML = '';
+        async function cargar() {
+            try {
+                const res = await fetch(URL_API);
+                const data = await res.json();
+                tasaBCV = data.tasa;
+                document.getElementById('tasa-val').innerText = tasaBCV.toFixed(2);
+                document.getElementById('loader').style.display = 'none';
+                renderizar(data);
+            } catch (e) { document.getElementById('loader').innerText = "ERROR DE CONEXIÓN"; }
+        }
 
-        // 1. CALCULAR EL DISPONIBLE REAL DESDE MOVIMIENTOS
-        data.movimientos.forEach(m => {
-            let tipo = m[1];
-            let monto = parseFloat(m[3]) || 0;
-            if (tipo === "Ingreso" || tipo === "Cobro_Cli") disponible += monto;
-            if (tipo === "Abono_Prov" || tipo === "Egreso") disponible -= monto;
-        });
+        function renderizar(data) {
+            let disp = 0, deu = 0, calle = 0;
 
-        // 2. PROCESAR PROVEEDORES
-        data.proveedores.slice(1).forEach(p => {
-            const saldo = parseFloat(p[2]) || 0;
-            totalDeuda += saldo;
-            crearTarjeta(p[0], saldo, saldo > 0 ? 'var(--red)' : 'var(--green)', 'PROVEEDOR');
-        });
+            // Historial rápido (últimos 5)
+            const movsDiv = document.getElementById('mini-movs');
+            movsDiv.innerHTML = data.movimientos.slice(-5).reverse().map(m => `
+                <div style="font-size:0.8rem; margin-bottom:8px; padding:5px; border-bottom:1px solid #1f2937">
+                    <span style="color:var(--cyan)">${m[1]}</span> | ${m[2]} | <b>${m[3]} Bs</b>
+                </div>
+            `).join('');
 
-        // 3. PROCESAR CLIENTES
-        data.clientes.slice(1).forEach(c => {
-            const saldo = parseFloat(c[2]) || 0;
-            totalCalle += saldo;
-            crearTarjeta(c[0], saldo, 'var(--amber)', 'CLIENTE');
-        });
+            // Cálculo de Disponible
+            data.movimientos.slice(1).forEach(m => {
+                let mnt = parseFloat(m[3]) || 0;
+                if(m[1] === "Ingreso" || m[1] === "Cobro_Cli") disp += mnt;
+                else if(m[1] === "Abono_Prov" || m[1] === "Egreso") disp -= mnt;
+            });
 
-        // ACTUALIZAR NÚMEROS EN PANTALLA
-        document.getElementById('sum-disp').innerText = `$ ${disponible.toFixed(2)}`;
-        document.getElementById('sum-deuda').innerText = `$ ${totalDeuda.toFixed(2)}`;
-        document.getElementById('sum-calle').innerText = `$ ${totalCalle.toFixed(2)}`;
-        
-        renderChart(totalDeuda, totalCalle);
-    }
+            // Listas y totales
+            const drawList = (id, source, color, label) => {
+                let total = 0;
+                document.getElementById(id).innerHTML = source.slice(1).map(p => {
+                    let m = parseFloat(p[2]) || 0;
+                    total += m;
+                    return m === 0 ? '' : `
+                        <div class="item-row" style="border-left: 4px solid ${color}">
+                            <div><b class="item-name">${p[0]}</b><span class="item-sub">${label}</span></div>
+                            <div class="item-price" style="color:${color}">${m.toLocaleString()} Bs</div>
+                        </div>`;
+                }).join('');
+                return total;
+            };
 
-    function crearTarjeta(nombre, monto, color, etiqueta) {
-        const div = document.createElement('div');
-        div.className = 'person-item';
-        div.style.borderLeftColor = color;
-        div.innerHTML = `<div><b>${nombre}</b><br><small>${etiqueta}</small></div>
-                         <div style="color:${color}; font-weight:bold;">$${Math.abs(monto).toFixed(2)}</div>`;
-        document.getElementById('lista-personas').appendChild(div);
-    }
+            deu = drawList('list-prov', data.proveedores, 'var(--rose)', 'Deuda Pendiente');
+            calle = drawList('list-cli', data.clientes, 'var(--amber)', 'Dinero en calle');
 
-    function renderChart(deuda, calle) {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        if (window.myChart) window.myChart.destroy();
-        window.myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Deuda', 'Calle'],
-                datasets: [{ data: [deuda, calle], backgroundColor: ['#fb7185', '#fbbf24'], borderWidth: 0 }]
-            },
-            options: { plugins: { legend: { display: false } }, cutout: '70%' }
-        });
-    }
+            // Actualizar Cabecera
+            document.getElementById('disp-bs').innerText = disp.toLocaleString() + " Bs";
+            document.getElementById('disp-usd').innerText = "≈ " + (disp / tasaBCV).toFixed(2) + " $";
+            document.getElementById('val-deuda').innerText = deu.toLocaleString() + " Bs";
+            document.getElementById('val-calle').innerText = calle.toLocaleString() + " Bs";
+        }
 
-    function showForm(type) { document.getElementById('form-container').style.display = 'block'; }
-    function hideForm() { document.getElementById('form-container').style.display = 'none'; }
+        function nav(viewId, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            btn.classList.add('active');
+        }
 
-    async function enviar() {
-        const btn = event.target;
-        btn.innerText = "PROCESANDO...";
-        btn.disabled = true;
-        const payload = {
-            tipo: document.getElementById('f-tipo').value,
-            beneficiario: document.getElementById('f-benef').value,
-            monto: parseFloat(document.getElementById('f-monto').value),
-            referencia: document.getElementById('f-ref').value,
-            concepto: document.getElementById('f-conc').value
-        };
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("¡Sincronizado!");
+        async function enviarOperacion() {
+            const b = event.target; b.innerText = "ENVIANDO..."; b.disabled = true;
+            const body = {
+                tipo: document.getElementById('f-tipo').value,
+                beneficiario: document.getElementById('f-benef').value,
+                montoBs: parseFloat(document.getElementById('f-monto').value),
+                tasa: tasaBCV,
+                referencia: document.getElementById('f-ref').value
+            };
+            await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(body) });
             location.reload();
-        } catch (e) { alert("Error"); btn.disabled = false; }
-    }
-</script>
+        }
+
+        window.onload = cargar;
+    </script>
 </body>
 </html>
