@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Control Total</title>
+    <title>AdriSweets Pro - Control Richard</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
@@ -14,10 +14,9 @@
         .main-balance { font-family: 'Orbitron'; font-size: 2rem; margin: 5px 0; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .btn-touch { background: var(--card); padding: 15px 5px; border-radius: 15px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; cursor: pointer; font-size: 0.8rem; }
-        .section-title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--cyan); padding: 10px 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .section-title { font-family: 'Orbitron'; font-size: 0.75rem; color: var(--cyan); padding: 15px 20px 5px 20px; text-transform: uppercase; }
         .list-item { background: var(--card); padding: 15px; border-radius: 15px; margin: 0 15px 10px 15px; border-left: 5px solid transparent; display: flex; justify-content: space-between; align-items: center; }
-        .info-box { background: rgba(34, 211, 238, 0.1); padding: 8px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--cyan); font-size: 0.75rem; color: #eee; width: 100%; }
-        .badge-deuda { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px; }
+        .info-box { background: rgba(34, 211, 238, 0.1); padding: 8px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--cyan); font-size: 0.75rem; color: #fff; font-weight: 500; width: 100%; }
         .view { display: none; }
         .view.active { display: block; }
         .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1f2937; z-index: 100; }
@@ -41,12 +40,12 @@
         <div class="btn-touch" style="border-bottom-color:var(--amber)" onclick="registrarNuevo('Fiado')">👤<br>Fiar Dulce</div>
     </div>
     
-    <div class="section-title">Recordatorio: Cuentas Pendientes</div>
+    <div class="section-title">Recordatorio: Solo Cuentas por Cobrar/Pagar</div>
     <div id="lista-pendientes-inicio"></div>
 </div>
 
 <div id="v-hist" class="view">
-    <div class="section-title" style="margin-top:15px">Historial de Movimientos</div>
+    <div class="section-title" style="margin-top:15px">Historial Detallado</div>
     <div id="lista-historial"></div>
 </div>
 
@@ -65,14 +64,14 @@
             db = await r.json();
             document.getElementById('tasa-val').innerText = db.tasa;
             render();
-        } catch(e) { alert("Error de carga"); }
+        } catch(e) { console.log(e); }
     }
 
     function render() {
         let saldoBancario = parseFloat(db.saldoInicial) || 0;
         let pendHtml = "", histHtml = "";
 
-        // Historial
+        // Historial Completo con Columna F (Detalle)
         db.movimientos.slice(1).reverse().forEach(m => {
             let mnt = parseFloat(m[3]) || 0;
             let tipo = m[1];
@@ -80,31 +79,31 @@
             if(["Venta","Abono_Cobrado"].includes(tipo)) saldoBancario += mnt;
             if(esGasto) saldoBancario -= mnt;
             
+            // EL DETALLE ESTÁ EN LA COLUMNA F (Índice 5)
+            let descGasto = m[5] ? m[5] : ""; 
+
             histHtml += `
             <div class="list-item" style="border-left-color:${esGasto ? 'var(--rose)' : 'var(--green)'}">
                 <div style="flex:1">
                     <b style="${esGasto ? 'color:var(--rose)' : ''}">${m[2]}</b> 
                     <small style="color:var(--cyan)">(${tipo})</small>
                     <div style="font-size:0.65rem; color:var(--gray); margin-top:3px;">📅 ${m[0]}</div>
-                    ${m[5] ? `<div class="info-box">ℹ️ ${m[5]}</div>` : ''}
+                    ${descGasto ? `<div class="info-box">ℹ️ ${descGasto}</div>` : ''}
                 </div>
                 <b style="${esGasto ? 'color:var(--rose)' : 'color:var(--green)'}">${mnt.toFixed(2)} Bs</b>
             </div>`;
         });
 
-        // Pendientes en Inicio (Recordatorio)
+        // Inicio: Solo Deudas Reales (Filtra ENTRADA y GASTO)
         db.entidades.slice(1).forEach(e => {
             let sal = parseFloat(e[2]) || 0;
-            if(Math.abs(sal) > 0.1) {
+            let nombre = e[0].toUpperCase();
+            // Filtro: Solo si hay saldo y NO es entrada/gasto genérico
+            if(Math.abs(sal) > 0.1 && nombre !== "ENTRADA" && nombre !== "GASTO") {
                 let esYoDebo = e[1] === "Proveedor";
                 pendHtml += `
                 <div class="list-item" style="border-left-color:${esYoDebo?'var(--rose)':'var(--amber)'}" onclick="opcionesPersona('${e[0]}', ${sal}, '${e[1]}')">
-                    <div>
-                        <b>${e[0]}</b><br>
-                        <span class="badge-deuda" style="background:${esYoDebo?'rgba(244,63,94,0.2)':'rgba(251,191,36,0.2)'}; color:${esYoDebo?'var(--rose)':'var(--amber)'}">
-                            ${esYoDebo?'DEBO':'ME DEBEN'}
-                        </span>
-                    </div>
+                    <div><b>${e[0]}</b><br><small style="color:${esYoDebo?'var(--rose)':'var(--amber)'}">${esYoDebo?'YO DEBO':'ME DEBEN'}</small></div>
                     <div style="text-align:right"><b>${sal.toFixed(2)} Bs</b></div>
                 </div>`;
             }
@@ -117,23 +116,23 @@
     }
 
     function opcionesPersona(nom, sal, tipoOriginal) {
-        let opc = prompt(`Gestión para ${nom}\nSaldo actual: ${sal} Bs\n\nEscribe:\n1 - Cobrar/Pagar Abono\n2 - Sumar más deuda`, "1");
+        let opc = prompt(`Gestión para ${nom}\nSaldo: ${sal} Bs\n\n1 - Abono (Pagar/Cobrar)\n2 - Sumar más deuda`, "1");
         if(opc === "1") {
-            let m = prompt(`Monto a ABONAR (Saldo: ${sal} Bs):`, sal);
+            let m = prompt(`Monto del ABONO:`, sal);
             if(m) registrarNuevo(tipoOriginal === "Proveedor" ? "Abono_Pagado" : "Abono_Cobrado", nom, m);
         } else if(opc === "2") {
-            let m = prompt(`Monto de NUEVA DEUDA para ${nom}:`);
+            let m = prompt(`Monto a SUMAR a la deuda de ${nom}:`);
             if(m) registrarNuevo(tipoOriginal === "Proveedor" ? "Deuda" : "Fiado", nom, m);
         }
     }
 
     async function registrarNuevo(tipo, nomInput = null, mntInput = null) {
-        let persona = nomInput || ((tipo === "Venta") ? "ENTRADA" : (tipo === "Gasto" ? "GASTO" : prompt("¿Nombre de la persona?")));
+        let persona = nomInput || ((tipo === "Venta") ? "ENTRADA" : (tipo === "Gasto" ? "GASTO" : prompt("Nombre:")));
         if(!persona) return;
-        let monto = mntInput || prompt("Monto en Bs:");
+        let monto = mntInput || prompt("Monto Bs:");
         if(!monto) return;
-        let metodo = prompt("Método (Efectivo, Pago Móvil, etc):", "Pago Móvil");
-        let detalle = prompt("¿Detalle o nota adicional?", "");
+        let metodo = prompt("Método:", "Pago Móvil");
+        let detalle = prompt("¿En qué lo gastaste? / Descripción:", "");
 
         document.body.style.opacity="0.5";
         await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({
