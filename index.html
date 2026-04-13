@@ -3,59 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Corrección de Saldo</title>
+    <title>AdriSweets Pro - Minimal</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; }
+        :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; }
-        .header { padding: 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; }
-        .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; }
-        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -15px; }
-        .kpi-card { background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid #334155; text-align: center; }
+        
+        /* Encabezado Limpio */
+        .header { padding: 30px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; position: relative; }
+        
+        /* Indicador sutil de tasa */
+        .tasa-mini { 
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: 'Orbitron'; font-size: 0.7rem; color: var(--gray); margin-bottom: 10px;
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray); transition: 0.3s; }
+        .status-dot.active { background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: pulse 2s infinite; }
+
+        .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; letter-spacing: -1px; }
+        .usd-val { color: var(--cyan); font-weight: bold; opacity: 0.9; font-size: 1.1rem; }
+
+        /* Resto de la interfaz */
+        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -20px; }
+        .kpi-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid #1f2937; text-align: center; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .btn-touch { background: var(--card); padding: 25px 15px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; }
+        .btn-touch { background: var(--card); padding: 25px 15px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; }
+        
+        .list-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 6px solid transparent; display: flex; align-items: center; justify-content: space-between; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         .view { display: none; padding: 20px; }
         .view.active { display: block; }
-        .list-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 6px solid transparent; display: flex; align-items: center; justify-content: space-between; }
-        .badge { font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; font-weight: bold; margin-top: 5px; display: inline-block; }
-        .badge-debo { background: rgba(244, 63, 94, 0.2); color: var(--rose); border: 1px solid var(--rose); }
-        .badge-calle { background: rgba(251, 191, 36, 0.2); color: var(--amber); border: 1px solid var(--amber); }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
-        .nav-btn { background: none; border: none; color: #64748b; font-weight: bold; font-size: 0.7rem; }
-        .nav-btn.active { color: var(--cyan); }
     </style>
 </head>
 <body>
 
 <div class="header">
+    <div class="tasa-mini" onclick="setTasa()">
+        <div id="dot" class="status-dot"></div>
+        BCV: <span id="tasa-val">0.00</span>
+    </div>
     <div id="bs-total" class="main-balance">0.00 Bs</div>
-    <div id="usd-total" style="color:var(--cyan); opacity:0.8">≈ 0.00 $</div>
+    <div id="usd-total" class="usd-val">≈ 0.00 $</div>
 </div>
 
 <div class="kpi-row">
-    <div class="kpi-card" style="border-bottom: 3px solid var(--rose)"><small>YO DEBO</small><br><b id="kpi-debo" style="color:var(--rose)">0 Bs</b></div>
-    <div class="kpi-card" style="border-bottom: 3px solid var(--amber)"><small>ME DEBEN</small><br><b id="kpi-calle" style="color:var(--amber)">0 Bs</b></div>
+    <div class="kpi-card" style="border-bottom-color: var(--rose)"><small style="color:var(--gray)">DEBO</small><br><b id="kpi-debo" style="color:var(--rose)">0 Bs</b></div>
+    <div class="kpi-card" style="border-bottom-color: var(--amber)"><small style="color:var(--gray)">EN CALLE</small><br><b id="kpi-calle" style="color:var(--amber)">0 Bs</b></div>
 </div>
 
 <div id="v-dash" class="view active">
     <div class="action-grid">
-        <div class="btn-touch" style="border-bottom: 4px solid var(--green)" onclick="registrarRapido('Venta')">💰<br>Venta</div>
-        <div class="btn-touch" style="border-bottom: 4px solid var(--rose)" onclick="registrarRapido('Deuda')">📦<br>Yo Debo</div>
-        <div class="btn-touch" style="border-bottom: 4px solid var(--amber)" onclick="registrarRapido('Fiado')">👤<br>Fiar Dulce</div>
-        <div class="btn-touch" style="border-bottom: 4px solid var(--cyan)" onclick="nav('v-abonos')">💸<br>Pagar/Cobrar</div>
+        <div class="btn-touch" style="border-bottom-color: var(--green)" onclick="registrarRapido('Venta')">💰<br><small>Venta</small></div>
+        <div class="btn-touch" style="border-bottom-color: var(--rose)" onclick="registrarRapido('Deuda')">📦<br><small>Yo Debo</small></div>
+        <div class="btn-touch" style="border-bottom-color: var(--amber)" onclick="registrarRapido('Fiado')">👤<br><small>Fiar</small></div>
+        <div class="btn-touch" style="border-bottom-color: var(--cyan)" onclick="nav('v-abonos')">💸<br><small>Cobrar</small></div>
     </div>
-    <div id="lista-pendientes-dash"></div>
+    <div id="lista-pendientes" style="padding:0 5px"></div>
 </div>
-
-<div id="v-hist" class="view">
-    <div id="lista-historial"></div>
-</div>
-
-<nav class="nav">
-    <button class="nav-btn active" onclick="nav('v-dash', this)">INICIO</button>
-    <button class="nav-btn" onclick="nav('v-hist', this)">HISTORIAL</button>
-</nav>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79T15qYpqB09Vf22uGiABkH3CLeKaBIi7yiYY2s60Kufk-Wqu4eB6WY2sLzNEAql_/exec";
@@ -64,57 +70,65 @@
     async function init() {
         const r = await fetch(SCRIPT_URL);
         db = await r.json();
+        
+        // Lógica del punto de advertencia sutil
+        const lastTasa = localStorage.getItem('last_tasa');
+        if(lastTasa && lastTasa !== db.tasa.toString()) {
+            document.getElementById('dot').classList.add('active'); // Se pone amarillo si cambió
+        }
+        localStorage.setItem('last_tasa', db.tasa);
+        
         render();
     }
 
     function render() {
-        let saldoBancario = parseFloat(db.saldoInicial) || 0;
-        let debo = 0, calle = 0, pendHtml = "", histHtml = "";
+        document.getElementById('tasa-val').innerText = db.tasa;
+        let saldo = parseFloat(db.saldoInicial) || 0;
+        let debo = 0, calle = 0, pendHtml = "";
 
-        db.movimientos.slice(1).reverse().forEach(m => {
+        db.movimientos.slice(1).forEach(m => {
             let mnt = parseFloat(m[3]) || 0;
-            if(m[1] === "Venta" || m[1] === "Abono_Cobrado") saldoBancario += mnt;
-            if(m[1] === "Abono_Pagado" || m[1] === "Gasto" || m[1] === "Deuda") saldoBancario -= mnt;
-
-            histHtml += `<div class="list-item"><b>${m[2]}</b> <span>${mnt} Bs</span></div>`;
+            if(["Venta","Abono_Cobrado"].includes(m[1])) saldo += mnt;
+            if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) saldo -= mnt;
         });
 
         db.entidades.slice(1).forEach(e => {
-            let sBs = parseFloat(e[2]);
-            // FILTRO DE SEGURIDAD: Solo mostramos deudas mayores a 2.5 Bs para eliminar el "1.4"
-            if(Math.abs(sBs) > 2.5) { 
-                let esDebo = (e[1] === "Proveedor");
-                if(esDebo) debo += sBs; else calle += sBs;
-
-                pendHtml += `
-                <div class="list-item" style="border-left-color: ${esDebo ? 'var(--rose)' : 'var(--amber)'}">
-                    <div><b>${e[0]}</b><br><span class="badge ${esDebo ? 'badge-debo' : 'badge-calle'}">${esDebo ? 'Yo Debo' : 'Me Deben'}</span></div>
-                    <div style="text-align:right"><b>${sBs.toLocaleString()} Bs</b></div>
+            let s = parseFloat(e[2]);
+            if(Math.abs(s) > 3) { // Limpieza automática de saldos basura
+                let esD = e[1] === "Proveedor";
+                if(esD) debo += s; else calle += s;
+                pendHtml += `<div class="list-item" style="border-left-color:${esD?'var(--rose)':'var(--amber)'}">
+                    <b>${e[0]}</b> <span>${s.toLocaleString()} Bs</span>
                 </div>`;
             }
         });
 
-        document.getElementById('bs-total').innerText = saldoBancario.toLocaleString() + " Bs";
-        document.getElementById('bs-total').style.color = saldoBancario < 0 ? "var(--rose)" : "white";
+        document.getElementById('bs-total').innerText = saldo.toLocaleString() + " Bs";
+        document.getElementById('bs-total').style.color = saldo < 0 ? "var(--rose)" : "white";
+        document.getElementById('usd-total').innerText = "≈ " + (saldo / db.tasa).toFixed(2) + " $";
         document.getElementById('kpi-debo').innerText = debo.toLocaleString() + " Bs";
         document.getElementById('kpi-calle').innerText = calle.toLocaleString() + " Bs";
-        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ Sin deudas";
-        document.getElementById('lista-historial').innerHTML = histHtml;
+        document.getElementById('lista-pendientes').innerHTML = pendHtml;
+    }
+
+    async function setTasa() {
+        let n = prompt("Actualizar Tasa BCV:", db.tasa);
+        if(n && n !== db.tasa) {
+            await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({accion:"CAMBIAR_TASA", valor: parseFloat(n)})});
+            location.reload();
+        }
     }
 
     async function registrarRapido(tipo) {
         let p = prompt("Nombre:");
-        let m = prompt("Monto:");
+        let m = prompt("Monto Bs:");
         if(p && m) {
+            document.body.style.opacity="0.5";
             await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({accion:"REGISTRAR", tipo, persona: p, monto: parseFloat(m), tasa: db.tasa})});
             location.reload();
         }
     }
 
-    function nav(id, btn) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
     window.onload = init;
 </script>
 </body>
