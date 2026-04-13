@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Entradas y Salidas</title>
+    <title>AdriSweets Pro - Detalle Total</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; --purple: #a855f7; }
@@ -18,14 +18,12 @@
         .toast-alert.show { transform: translateX(-50%) translateY(0); }
         .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; }
         .usd-val { color: var(--cyan); font-weight: bold; font-size: 1.1rem; opacity: 0.9; }
-        
-        /* Ajuste de Grid para 5 botones */
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
         .btn-touch { background: var(--card); padding: 20px 10px; border-radius: 18px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; cursor: pointer; }
-        .btn-full { grid-column: span 2; } /* El botón de pagar ocupa todo el ancho abajo */
-
+        .btn-full { grid-column: span 2; }
         .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; text-transform: uppercase; margin-top: 5px; display: inline-block; }
+        .detail-text { font-size: 0.7rem; color: var(--gray); margin-top: 4px; display: block; }
         .view { display: none; padding: 20px; }
         .view.active { display: block; }
         .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
@@ -100,19 +98,27 @@
 
         db.movimientos.slice(1).reverse().forEach(m => {
             let mnt = parseFloat(m[3]) || 0;
-            // ENTRADAS: Ventas y Cobros
+            let fechaHora = m[0] ? m[0] : "Sin fecha"; // La fecha viene de la Columna A del Excel
+            let metodo = m[4] ? m[4] : "No especificado"; // Suponiendo Columna E para método
+
             if(["Venta","Abono_Cobrado"].includes(m[1])) saldoBancario += mnt;
-            // SALIDAS: Gastos, Pagos a proveedores y Deudas nuevas que sacan dinero
             if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) saldoBancario -= mnt;
             
-            histHtml += `<div class="list-item"><div><b>${m[2]}</b><br><small>${m[1]}</small></div><b>${mnt.toFixed(2)} Bs</b></div>`;
+            histHtml += `
+            <div class="list-item">
+                <div>
+                    <b>${m[2]}</b> <small style="color:var(--cyan)">(${m[1]})</small>
+                    <span class="detail-text">📅 ${fechaHora}</span>
+                    <span class="detail-text">💳 ${metodo}</span>
+                </div>
+                <b style="color:${mnt > 0 ? 'white' : 'white'}">${mnt.toFixed(2)} Bs</b>
+            </div>`;
         });
 
         db.entidades.slice(1).forEach(e => {
             let sActual = Math.round(parseFloat(e[2]) * 100) / 100;
             let n = e[0].toUpperCase();
-            // Ignoramos nombres genéricos de sistema en la lista de cuentas
-            if(Math.abs(sActual) >= 0.01 && n !== "VENTA" && n !== "VENTAS" && n !== "GASTO" && n !== "ENTRADA") { 
+            if(Math.abs(sActual) >= 0.01 && !["VENTA","VENTAS","GASTO","ENTRADA"].includes(n)) { 
                 let esD = e[1] === "Proveedor";
                 pendHtml += `
                 <div class="list-item" style="border-left-color:${esD?'var(--rose)':'var(--amber)'}" onclick="ejecutarAbono('${e[0]}', ${sActual}, '${e[1]}')">
@@ -141,7 +147,6 @@
 
     async function registrarSeguro(tipo) {
         let nom = "";
-        // Si es Venta o Gasto, le ponemos nombre automático para que no te pregunte
         if(tipo === "Venta") nom = "ENTRADA";
         else if(tipo === "Gasto") nom = "GASTO";
         else nom = prompt("Nombre de la persona o motivo:");
@@ -149,12 +154,37 @@
         if(!nom) return;
         
         let m = prompt("Monto en Bs:");
-        if(m) enviar({accion:"REGISTRAR", tipo, persona:nom, monto:parseFloat(m), tasa:db.tasa});
+        if(!m) return;
+
+        // PREGUNTA POR MÉTODO DE PAGO
+        let mp = prompt("Método de pago (Efectivo, Pago Móvil, Punto, Transferencia):", "Pago Móvil");
+        if(!mp) mp = "Efectivo";
+
+        enviar({
+            accion:"REGISTRAR", 
+            tipo, 
+            persona:nom, 
+            monto:parseFloat(m), 
+            tasa:db.tasa,
+            descripcion: mp // Enviamos el método de pago como descripción
+        });
     }
 
     function ejecutarAbono(nom, sal, tipo) {
         let m = prompt(`ABONO para ${nom}\nSaldo: ${sal} Bs`, sal);
-        if(m) enviar({accion:"REGISTRAR", tipo: tipo==="Proveedor"?"Abono_Pagado":"Abono_Cobrado", persona:nom, monto:parseFloat(m), tasa:db.tasa});
+        if(!m) return;
+        
+        let mp = prompt("Método de pago (Efectivo, Pago Móvil, Punto, Transferencia):", "Pago Móvil");
+        if(!mp) mp = "Efectivo";
+
+        enviar({
+            accion:"REGISTRAR", 
+            tipo: tipo==="Proveedor"?"Abono_Pagado":"Abono_Cobrado", 
+            persona:nom, 
+            monto:parseFloat(m), 
+            tasa:db.tasa,
+            descripcion: mp
+        });
     }
 
     async function enviar(d) {
