@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Detalle Fijo</title>
+    <title>AdriSweets Pro - Info Gasto</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; --purple: #a855f7; }
@@ -17,8 +17,20 @@
         .btn-touch { background: var(--card); padding: 20px 10px; border-radius: 18px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; cursor: pointer; }
         .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
         .detail-text { font-size: 0.7rem; color: var(--gray); margin-top: 4px; display: block; }
-        /* ESTA ES LA CAJA QUE RESALTA EL DETALLE */
-        .desc-box { background: rgba(34, 211, 238, 0.1); color: #fff; padding: 6px 10px; border-radius: 8px; margin-top: 8px; font-size: 0.8rem; border-left: 3px solid var(--cyan); display: block; font-style: italic; }
+        
+        /* CAJA DE INFORMACIÓN RESALTADA */
+        .info-gasto { 
+            background: rgba(34, 211, 238, 0.15); 
+            color: #fff; 
+            padding: 10px; 
+            border-radius: 10px; 
+            margin-top: 10px; 
+            font-size: 0.85rem; 
+            border: 1px dashed var(--cyan);
+            display: block;
+            font-weight: 500;
+        }
+
         .view { display: none; padding: 20px; }
         .view.active { display: block; }
         .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
@@ -38,9 +50,9 @@
 
 <div id="v-dash" class="view active">
     <div class="action-grid">
-        <div class="btn-touch" style="border-bottom-color:var(--green)" onclick="registrarSeguro('Venta')">📥<br><small>Entrada</small></div>
-        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarSeguro('Gasto')">📤<br><small style="color:var(--rose); font-weight:bold;">Salida / Gasto</small></div>
-        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarSeguro('Deuda')">📦<br><small>Yo Debo</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--green)" onclick="registrarSeguro('Venta')">📥<br><small>Venta</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarSeguro('Gasto')">📤<br><small style="color:var(--rose); font-weight:bold;">Gasto</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarSeguro('Deuda')">📦<br><small>Nueva Deuda</small></div>
         <div class="btn-touch" style="border-bottom-color:var(--amber)" onclick="registrarSeguro('Fiado')">👤<br><small>Fiar Dulce</small></div>
     </div>
     <div id="lista-pendientes-dash"></div>
@@ -65,7 +77,7 @@
             db = await r.json();
             document.getElementById('tasa-val').innerText = db.tasa;
             render();
-        } catch(e) { alert("Error al cargar"); }
+        } catch(e) { alert("Error"); }
     }
 
     function formato12h(fechaStr) {
@@ -84,8 +96,8 @@
             let mnt = parseFloat(m[3]) || 0;
             let tipo = m[1];
             let esGasto = ["Gasto", "Abono_Pagado", "Deuda"].includes(tipo);
-            let metodo = m[4] || "Efectivo";
-            let detalleExtra = m[5] || ""; // AQUÍ ESTÁ EL DETALLE QUE BUSCAMOS
+            let metodo = m[4] || "No definido";
+            let detalleTexto = m[5] || ""; // Información del gasto
 
             if(["Venta","Abono_Cobrado"].includes(tipo)) saldoBancario += mnt;
             if(esGasto) saldoBancario -= mnt;
@@ -97,7 +109,7 @@
                     <small style="color:var(--cyan)">(${tipo})</small>
                     <span class="detail-text">📅 ${formato12h(m[0])}</span>
                     <span class="detail-text">💳 ${metodo}</span>
-                    ${detalleExtra ? `<span class="desc-box">📝 ${detalleExtra}</span>` : ''}
+                    ${detalleTexto ? `<span class="info-gasto">ℹ️ INFO: ${detalleTexto}</span>` : ''}
                 </div>
                 <b style="${esGasto ? 'color:var(--rose)' : 'color:var(--green)'}">${mnt.toFixed(2)} Bs</b>
             </div>`;
@@ -113,8 +125,10 @@
         if(!nom) return;
         let m = prompt("Monto en Bs:");
         if(!m) return;
-        let mp = prompt("Método (Efectivo, Pago Móvil, etc):", "Pago Móvil");
-        let det = prompt("¿En qué se gastó o detalle? (Opcional):", "");
+        let mp = prompt("Método de Pago:", "Pago Móvil");
+        
+        // AQUÍ ES DONDE DEBES ESCRIBIR EL DETALLE
+        let det = prompt("¿EN QUÉ LO GASTASTE? (Escribe aquí para que aparezca en el historial):", "");
 
         enviar({ accion:"REGISTRAR", tipo, persona:nom, monto:parseFloat(m), tasa:db.tasa, descripcion: mp, detalle: det });
     }
