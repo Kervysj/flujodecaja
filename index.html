@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Gastos en Rojo</title>
+    <title>AdriSweets Pro - Historial Detallado</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; --purple: #a855f7; }
@@ -24,7 +24,7 @@
         .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; text-transform: uppercase; margin-top: 5px; display: inline-block; }
         .detail-text { font-size: 0.7rem; color: var(--gray); margin-top: 4px; display: block; }
-        .desc-text { font-size: 0.75rem; color: #fff; opacity: 0.8; font-style: italic; margin-top: 4px; display: block; }
+        .desc-highlight { font-size: 0.75rem; color: #fff; background: rgba(255,255,255,0.05); padding: 5px 8px; border-radius: 8px; margin-top: 6px; display: inline-block; border-left: 2px solid var(--cyan); }
         .view { display: none; padding: 20px; }
         .view.active { display: block; }
         .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
@@ -114,26 +114,25 @@
             let tipo = m[1];
             let esGasto = ["Gasto", "Abono_Pagado", "Deuda"].includes(tipo);
             let fechaFormateada = formato12h(m[0]);
-            let metodo = m[4] ? m[4] : "No especificado";
-            let descripcionExtra = m[5] ? m[5] : ""; // Columna F para el detalle del gasto
+            let metodo = m[4] ? m[4] : "Efectivo";
+            let detalleGasto = m[5] ? m[5] : ""; // Columna F del Excel para el detalle
 
             if(["Venta","Abono_Cobrado"].includes(tipo)) saldoBancario += mnt;
             if(esGasto) saldoBancario -= mnt;
             
             histHtml += `
             <div class="list-item" style="border-left-color:${esGasto ? 'var(--rose)' : 'var(--green)'}">
-                <div>
+                <div style="flex:1">
                     <b style="${esGasto ? 'color:var(--rose)' : ''}">${m[2]}</b> 
                     <small style="color:var(--cyan)">(${tipo})</small>
                     <span class="detail-text">📅 ${fechaFormateada}</span>
                     <span class="detail-text">💳 ${metodo}</span>
-                    ${descripcionExtra ? `<span class="desc-text">📝 ${descripcionExtra}</span>` : ''}
+                    ${detalleGasto ? `<span class="desc-highlight">📝 ${detalleGasto}</span>` : ''}
                 </div>
-                <b style="${esGasto ? 'color:var(--rose)' : 'color:var(--green)'}">${mnt.toFixed(2)} Bs</b>
+                <b style="${esGasto ? 'color:var(--rose)' : 'color:var(--green)'}; font-family:'Orbitron'; font-size:0.9rem;">${mnt.toFixed(2)} Bs</b>
             </div>`;
         });
 
-        // ... resto del renderizado de deudas igual ...
         db.entidades.slice(1).forEach(e => {
             let sActual = Math.round(parseFloat(e[2]) * 100) / 100;
             if(Math.abs(sActual) >= 0.01 && !["VENTA","VENTAS","GASTO","ENTRADA"].includes(e[0].toUpperCase())) { 
@@ -159,13 +158,18 @@
         if(!m) return;
         let mp = prompt("Método (Efectivo, Pago Móvil, etc):", "Pago Móvil");
         
-        // NUEVA PREGUNTA DE DESCRIPCIÓN
-        let desc = "";
-        if(tipo === "Gasto" || tipo === "Deuda") {
-            desc = prompt("¿En qué se gastó? (Opcional):", "");
-        }
+        // El detalle es opcional
+        let detalle = prompt("Detalle/Motivo (Opcional):", "");
 
-        enviar({ accion:"REGISTRAR", tipo, persona:nom, monto:parseFloat(m), tasa:db.tasa, descripcion: mp, detalle: desc });
+        enviar({ accion:"REGISTRAR", tipo, persona:nom, monto:parseFloat(m), tasa:db.tasa, descripcion: mp, detalle: detalle });
+    }
+
+    function ejecutarAbono(nom, sal, tipo) {
+        let m = prompt(`ABONO para ${nom}\nSaldo: ${sal} Bs`, sal);
+        if(!m) return;
+        let mp = prompt("Método:", "Pago Móvil");
+        let det = prompt("Detalle del abono (Opcional):", "");
+        enviar({ accion:"REGISTRAR", tipo: tipo==="Proveedor"?"Abono_Pagado":"Abono_Cobrado", persona:nom, monto:parseFloat(m), tasa:db.tasa, descripcion: mp, detalle: det });
     }
 
     async function enviar(d) {
@@ -173,8 +177,7 @@
         await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(d)});
         location.reload();
     }
-    
-    // ... funciones de nav y closeToast iguales ...
+
     function closeToast(ok) { document.getElementById('toast').classList.remove('show'); if(!ok) setTasa(); }
     async function setTasa() { let n = prompt("Nueva Tasa BCV:", db.tasa); if(n && n !== db.tasa) enviar({accion:"CAMBIAR_TASA", valor: parseFloat(n)}); }
     function nav(id, btn) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); if(btn) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); } }
