@@ -1,36 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AdriSweets Pro - Fix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        
+        .header { padding: 30px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; }
+        .tasa-container { 
+            display: inline-flex; align-items: center; gap: 10px; background: rgba(31,41,55,0.5); 
+            padding: 8px 18px; border-radius: 50px; border: 1px solid #374151;
+            font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 15px; cursor: pointer;
+        }
+        .bulb { font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
+        .bulb.active { filter: grayscale(0); animation: glow 1.5s infinite alternate; }
+        @keyframes glow { from { text-shadow: 0 0 2px var(--amber); opacity: 1; } to { text-shadow: 0 0 15px var(--amber); opacity: 0.6; } }
+
+        .toast-alert {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(250%);
+            background: var(--card); border: 2px solid var(--amber); padding: 25px; width: 92%;
+            border-radius: 25px; z-index: 10000; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+        }
+        .toast-alert.show { transform: translateX(-50%) translateY(0); }
+
+        .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; }
+        .usd-val { color: var(--cyan); font-weight: bold; font-size: 1.1rem; opacity: 0.9; }
+
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 20px; }
+        .btn-touch { background: var(--card); padding: 25px 10px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; cursor: pointer; }
+        
+        .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; text-transform: uppercase; margin-top: 5px; display: inline-block; }
+
+        .view { display: none; padding: 20px; }
+        .view.active { display: block; }
+
+        .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
+        .nav-btn { background: none; border: none; color: var(--gray); font-family: 'Orbitron'; font-size: 0.75rem; font-weight: bold; }
+        .nav-btn.active { color: var(--cyan); }
+    </style>
+</head>
+<body>
+
+<div id="toast" class="toast-alert">
+    <div style="text-align:center; font-family:'Orbitron'; font-size: 0.8rem; color: var(--amber); margin-bottom:12px;">⚠️ CONFIRMACIÓN DE TASA</div>
+    <div style="text-align:center; font-size: 1.1rem; margin-bottom:20px;">¿La tasa BCV actual es <b><span id="tasa-toast">---</span></b>?</div>
+    <div style="display:flex; gap:12px;">
+        <button onclick="closeToast(true)" style="flex:1; background:var(--green); border:none; padding:15px; border-radius:15px; font-weight:bold; color:#000;">SÍ</button>
+        <button onclick="closeToast(false)" style="flex:1; background:var(--rose); border:none; padding:15px; border-radius:15px; font-weight:bold; color:#fff;">NO, CAMBIAR</button>
+    </div>
+</div>
+
+<div class="header">
+    <div class="tasa-container" onclick="setTasa()">
+        <span id="bulb-icon" class="bulb active">💡</span>
+        <span>BCV: <span id="tasa-val">0.00</span></span>
+    </div>
+    <div id="bs-total" class="main-balance">0.00 Bs</div>
+    <div id="usd-total" class="usd-val">≈ 0.00 $</div>
+</div>
+
+<div id="v-dash" class="view active">
+    <div class="action-grid">
+        <div class="btn-touch" style="border-bottom-color:var(--green)" onclick="registrarSeguro('Venta')">💰<br><small>Venta</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarSeguro('Deuda')">📦<br><small>Nueva Deuda</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--amber)" onclick="registrarSeguro('Fiado')">👤<br><small>Fiar Dulce</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--cyan)" onclick="nav('v-abonos')">💸<br><small>Pagar/Cobrar</small></div>
+    </div>
+    <div id="lista-pendientes-dash"></div>
+</div>
+
+<div id="v-abonos" class="view">
+    <div id="lista-para-abonar"></div>
+    <button onclick="nav('v-dash')" style="width:100%; color:var(--gray); background:none; border:none; padding:20px; font-family:'Orbitron';">← VOLVER</button>
+</div>
+
+<div id="v-hist" class="view">
+    <div id="lista-historial"></div>
+</div>
+
+<nav class="nav">
+    <button class="nav-btn active" onclick="nav('v-dash', this)">INICIO</button>
+    <button class="nav-btn" onclick="nav('v-hist', this)">HISTORIAL</button>
+</nav>
+
 <script>
-    // ... (Mantén el resto del código igual, solo actualiza la función render)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx79T15qYpqB09Vf22uGiABkH3CLeKaBIi7yiYY2s60Kufk-Wqu4eB6WY2sLzNEAql_/exec";
+    let db = {};
+
+    async function init() {
+        try {
+            const r = await fetch(SCRIPT_URL);
+            db = await r.json();
+            document.getElementById('tasa-val').innerText = db.tasa;
+            document.getElementById('tasa-toast').innerText = db.tasa;
+            document.getElementById('bulb-icon').classList.add('active');
+            setTimeout(() => { document.getElementById('toast').classList.add('show'); }, 600);
+            render();
+        } catch(e) { alert("Error cargando datos"); }
+    }
 
     function render() {
         let saldoBancario = parseFloat(db.saldoInicial) || 0;
         let pendHtml = "", histHtml = "";
-        let debo = 0, calle = 0;
 
-        // 1. PROCESAR MOVIMIENTOS (Asegurando que Venta SUME)
+        // Procesar Historial (Ventas SUMAN)
         db.movimientos.slice(1).reverse().forEach(m => {
             let mnt = parseFloat(m[3]) || 0;
-            
-            // Si es Venta o Cobro, SUMA al dinero disponible
-            if(["Venta","Abono_Cobrado"].includes(m[1])) {
-                saldoBancario += mnt;
-            } 
-            // Si es Gasto, Pago o Deuda propia, RESTA del dinero disponible
-            else if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) {
-                saldoBancario -= mnt;
-            }
-            
+            if(["Venta","Abono_Cobrado"].includes(m[1])) saldoBancario += mnt;
+            if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) saldoBancario -= mnt;
             histHtml += `<div class="list-item"><div><b>${m[2]}</b><br><small>${m[1]}</small></div><b>${mnt.toFixed(2)} Bs</b></div>`;
         });
 
-        // 2. PROCESAR ENTIDADES (Solo mostrar saldos reales pendientes)
+        // Procesar Pendientes (Filtrar "Venta" para que no salga como deuda)
         db.entidades.slice(1).forEach(e => {
             let sActual = Math.round(parseFloat(e[2]) * 100) / 100;
-            
-            // Solo mostramos si el saldo no es cero y NO es una entrada directa de "Venta"
             if(Math.abs(sActual) >= 0.01 && e[0].toUpperCase() !== "VENTA") { 
                 let esD = e[1] === "Proveedor";
-                if(esD) debo += sActual; else calle += sActual;
-
                 pendHtml += `
                 <div class="list-item" style="border-left-color:${esD?'var(--rose)':'var(--amber)'}" onclick="ejecutarAbono('${e[0]}', ${sActual}, '${e[1]}')">
                     <div><b>${e[0]}</b><br><span class="badge" style="color:${esD?'var(--rose)':'var(--amber)'}">${esD?'Yo Debo':'Me Deben'}</span></div>
@@ -39,11 +130,57 @@
             }
         });
 
-        // 3. ACTUALIZAR PANTALLA
         document.getElementById('bs-total').innerText = saldoBancario.toFixed(2) + " Bs";
         document.getElementById('usd-total').innerText = "≈ " + (saldoBancario / db.tasa).toFixed(2) + " $";
         document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ TODO AL DÍA";
         document.getElementById('lista-para-abonar').innerHTML = pendHtml;
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
+
+    function closeToast(ok) {
+        document.getElementById('toast').classList.remove('show');
+        if(!ok) setTasa(); else document.getElementById('bulb-icon').classList.remove('active');
+    }
+
+    async function setTasa() {
+        let n = prompt("Nueva Tasa BCV:", db.tasa);
+        if(n && n !== db.tasa) enviar({accion:"CAMBIAR_TASA", valor: parseFloat(n)});
+    }
+
+    async function registrarSeguro(tipo) {
+        let nom = prompt("Nombre:").trim();
+        if(!nom) return;
+        let existe = db.entidades.find(e => e[0].toUpperCase() === nom.toUpperCase());
+        if(existe && tipo !== "Venta") {
+            if(!confirm(`"${nom}" ya existe. ¿Sumar a su cuenta?\n(Cancelar para cambiar nombre)`)) {
+                nom = prompt("Nuevo nombre:");
+                if(!nom) return;
+            }
+        }
+        let m = prompt("Monto Bs:");
+        if(m) enviar({accion:"REGISTRAR", tipo, persona:nom, monto:parseFloat(m), tasa:db.tasa});
+    }
+
+    function ejecutarAbono(nom, sal, tipo) {
+        let m = prompt(`ABONO para ${nom}\nSaldo: ${sal} Bs`, sal);
+        if(m) enviar({accion:"REGISTRAR", tipo: tipo==="Proveedor"?"Abono_Pagado":"Abono_Cobrado", persona:nom, monto:parseFloat(m), tasa:db.tasa});
+    }
+
+    async function enviar(d) {
+        document.body.style.opacity="0.5";
+        await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(d)});
+        location.reload();
+    }
+
+    function nav(id, btn) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    }
+    window.onload = init;
 </script>
+</body>
+</html>
