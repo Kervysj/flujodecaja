@@ -3,67 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - V2.5</title>
+    <title>AdriSweets Pro V2.6</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; }
         
-        .header { padding: 35px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; position: relative; }
-        
+        .header { padding: 30px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; }
         .tasa-container { 
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-            background: rgba(31, 41, 55, 0.5); padding: 8px 18px; border-radius: 50px;
-            font-family: 'Orbitron'; font-size: 0.85rem; color: #fff; margin-bottom: 15px;
-            border: 1px solid #374151;
+            display: inline-flex; align-items: center; gap: 10px; background: rgba(31,41,55,0.5); 
+            padding: 8px 15px; border-radius: 50px; border: 1px solid #374151;
+            font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 15px;
         }
-        .bulb { font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
+        .bulb { font-size: 1.1rem; filter: grayscale(1); }
         .bulb.active { filter: grayscale(0); animation: glow 1.5s infinite alternate; }
 
-        .main-balance { font-family: 'Orbitron'; font-size: 2.5rem; margin: 5px 0; }
-        .usd-val { color: var(--cyan); font-weight: bold; opacity: 0.9; font-size: 1.2rem; }
+        .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; }
+        .usd-val { color: var(--cyan); font-weight: bold; font-size: 1.1rem; opacity: 0.9; }
 
-        /* Notificación Toast */
+        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -20px; }
+        .kpi-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid #1f2937; text-align: center; }
+
         .toast-alert {
             position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(200%);
-            background: var(--card); border: 1px solid var(--amber); padding: 15px;
-            border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 2000; width: 90%; text-align: center;
+            background: var(--card); border: 1px solid var(--amber); padding: 15px; width: 90%;
+            border-radius: 20px; z-index: 2000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .toast-alert.show { transform: translateX(-50%) translateY(0); }
-        .toast-btns { display: flex; gap: 10px; width: 100%; }
-        .btn-toast { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; font-family: 'Orbitron'; font-size: 0.7rem; }
 
-        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -25px; }
-        .kpi-card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; }
-        
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 20px; }
-        .btn-touch { background: var(--card); padding: 25px 15px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; }
+        .btn-touch { background: var(--card); padding: 22px 10px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; }
         
-        .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; align-items: center; justify-content: space-between; }
-        .badge { font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; margin-top: 4px; display: inline-block; }
+        .list-item { background: var(--card); padding: 15px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
 
-        @keyframes glow { from { text-shadow: 0 0 2px var(--amber); opacity: 1; } to { text-shadow: 0 0 15px var(--amber); opacity: 0.5; } }
-
-        .view { display: none; padding: 20px; animation: fadeIn 0.3s; }
+        @keyframes glow { from { text-shadow: 0 0 2px var(--amber); } to { text-shadow: 0 0 12px var(--amber); } }
+        .view { display: none; padding: 20px; }
         .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; z-index: 1000; }
-        .nav-btn { background: none; border: none; color: #64748b; font-weight: bold; font-size: 0.7rem; font-family: 'Orbitron'; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
+        .nav-btn { background: none; border: none; color: var(--gray); font-family: 'Orbitron'; font-size: 0.7rem; font-weight: bold; }
         .nav-btn.active { color: var(--cyan); }
     </style>
 </head>
 <body>
 
 <div id="toast" class="toast-alert">
-    <div style="font-family: 'Orbitron'; font-size: 0.8rem; color: var(--amber);">⚠️ REVISIÓN DE TASA</div>
-    <div style="font-size: 0.9rem;">¿La tasa BCV <b><span id="tasa-toast">0</span></b> es correcta?</div>
-    <div class="toast-btns">
-        <button class="btn-toast" style="background: var(--green); color: #000;" onclick="closeToast(true)">SÍ, ES ESA</button>
-        <button class="btn-toast" style="background: var(--rose); color: #fff;" onclick="closeToast(false)">NO, CAMBIAR</button>
+    <div style="text-align:center; font-size: 0.9rem; margin-bottom:10px;">¿Tasa BCV <b><span id="tasa-toast">0</span></b> es correcta?</div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="closeToast(true)" style="flex:1; background:var(--green); border:none; padding:10px; border-radius:10px; font-weight:bold;">SÍ</button>
+        <button onclick="closeToast(false)" style="flex:1; background:var(--rose); border:none; padding:10px; border-radius:10px; font-weight:bold; color:#fff;">NO</button>
     </div>
 </div>
 
@@ -77,34 +67,32 @@
 </div>
 
 <div class="kpi-row">
-    <div class="kpi-card" style="border-bottom-color: var(--rose)"><small style="color:var(--gray)">YO DEBO</small><br><b id="kpi-debo" style="color:var(--rose)">0 Bs</b></div>
-    <div class="kpi-card" style="border-bottom-color: var(--amber)"><small style="color:var(--gray)">ME DEBEN</small><br><b id="kpi-calle" style="color:var(--amber)">0 Bs</b></div>
+    <div class="kpi-card" style="border-bottom: 3px solid var(--rose)"><small>DEBO</small><br><b id="kpi-debo" style="color:var(--rose)">0 Bs</b></div>
+    <div class="kpi-card" style="border-bottom: 3px solid var(--amber)"><small>EN CALLE</small><br><b id="kpi-calle" style="color:var(--amber)">0 Bs</b></div>
 </div>
 
 <div id="v-dash" class="view active">
     <div class="action-grid">
-        <div class="btn-touch" style="border-bottom-color: var(--green)" onclick="registrarRapido('Venta')">💰<br><small>Venta</small></div>
-        <div class="btn-touch" style="border-bottom-color: var(--rose)" onclick="registrarRapido('Deuda')">📦<br><small>Yo Debo</small></div>
-        <div class="btn-touch" style="border-bottom-color: var(--amber)" onclick="registrarRapido('Fiado')">👤<br><small>Fiar</small></div>
-        <div class="btn-touch" style="border-bottom-color: var(--cyan)" onclick="nav('v-abonos')">💸<br><small>Cobrar / Pagar</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--green)" onclick="registrarRapido('Venta')">💰<br><small>Venta</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarRapido('Deuda')">📦<br><small>Yo Debo</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--amber)" onclick="registrarRapido('Fiado')">👤<br><small>Fiar</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--cyan)" onclick="nav('v-abonos')">💸<br><small>Cobrar/Pagar</small></div>
     </div>
-    <div style="font-family:'Orbitron'; font-size:0.7rem; color:var(--cyan); margin:10px 5px;">CUENTAS ACTIVAS</div>
     <div id="lista-pendientes-dash"></div>
 </div>
 
 <div id="v-abonos" class="view">
-    <div style="font-family:'Orbitron'; font-size:0.8rem; color:var(--cyan); margin-bottom:15px; text-align:center;">SELECCIONA PARA COBRAR/PAGAR</div>
+    <div style="text-align:center; color:var(--cyan); font-family:'Orbitron'; margin-bottom:20px;">CUENTAS PENDIENTES</div>
     <div id="lista-para-abonar"></div>
-    <button onclick="nav('v-dash')" style="width:100%; padding:15px; color:var(--gray); background:none; border:none; font-weight:bold; font-family:'Orbitron';">← VOLVER</button>
+    <button onclick="nav('v-dash')" style="width:100%; color:var(--gray); background:none; border:none; padding:15px; font-family:'Orbitron';">← VOLVER</button>
 </div>
 
 <div id="v-hist" class="view">
-    <div style="font-family:'Orbitron'; font-size:0.8rem; color:var(--cyan); margin-bottom:15px;">HISTORIAL DE MOVIMIENTOS</div>
     <div id="lista-historial"></div>
 </div>
 
 <nav class="nav">
-    <button class="nav-btn active" id="btn-nav-inicio" onclick="nav('v-dash', this)">INICIO</button>
+    <button class="nav-btn active" onclick="nav('v-dash', this)">INICIO</button>
     <button class="nav-btn" onclick="nav('v-hist', this)">HISTORIAL</button>
 </nav>
 
@@ -115,99 +103,88 @@
     async function init() {
         const r = await fetch(SCRIPT_URL);
         db = await r.json();
-        
         document.getElementById('tasa-val').innerText = db.tasa;
         document.getElementById('tasa-toast').innerText = db.tasa;
 
-        const lastTasa = localStorage.getItem('last_tasa_confirmed');
-        if(lastTasa !== db.tasa.toString()) {
+        if(localStorage.getItem('confirmed_tasa') !== db.tasa.toString()) {
             document.getElementById('bulb-icon').classList.add('active');
-            setTimeout(() => { document.getElementById('toast').classList.add('show'); }, 800);
+            setTimeout(() => document.getElementById('toast').classList.add('show'), 800);
         }
-        
         render();
     }
 
     function render() {
-        let saldo = parseFloat(db.saldoInicial) || 0;
+        let saldoBancario = parseFloat(db.saldoInicial) || 0;
         let debo = 0, calle = 0, pendHtml = "", histHtml = "";
 
-        // Historial
+        // Procesar Movimientos para Saldo e Historial
         db.movimientos.slice(1).reverse().forEach(m => {
             let mnt = parseFloat(m[3]) || 0;
-            if(["Venta","Abono_Cobrado"].includes(m[1])) saldo += mnt;
-            if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) saldo -= mnt;
-            histHtml += `<div class="list-item"><div><b>${m[2]}</b><br><small>${m[1]}</small></div><b>${mnt.toLocaleString()} Bs</b></div>`;
+            if(["Venta","Abono_Cobrado"].includes(m[1])) saldoBancario += mnt;
+            if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) saldoBancario -= mnt;
+            histHtml += `<div class="list-item"><div><b>${m[2]}</b><br><small>${m[1]}</small></div><b>${mnt} Bs</b></div>`;
         });
 
-        // Entidades (Filtro > 3.5 Bs para eliminar el 1.4)
+        // Procesar Entidades (Saldos RESTANTES)
         db.entidades.slice(1).forEach(e => {
-            let s = parseFloat(e[2]);
-            if(Math.abs(s) > 3.5) {
-                let esD = e[1] === "Proveedor";
-                if(esD) debo += s; else calle += s;
-                let item = `
-                <div class="list-item" style="border-left-color:${esD?'var(--rose)':'var(--amber)'}" onclick="ejecutarAbono('${e[0]}', ${s}, '${e[1]}')">
-                    <div><b>${e[0]}</b><br><span class="badge" style="background:${esD?'rgba(244,63,94,0.1)':'rgba(251,191,36,0.1)'}; color:${esD?'var(--rose)':'var(--amber)'}">${esD?'Debo':'Me deben'}</span></div>
-                    <div style="text-align:right"><b>${s.toLocaleString()} Bs</b><br><small style="color:var(--cyan)">$ ${(s/db.tasa).toFixed(2)}</small></div>
+            let saldoRestante = parseFloat(e[2]);
+            if(Math.abs(saldoRestante) > 5) { // Filtro para montos basura
+                let esDebo = e[1] === "Proveedor";
+                if(esDebo) debo += saldoRestante; else calle += saldoRestante;
+
+                let card = `
+                <div class="list-item" style="border-left-color:${esDebo?'var(--rose)':'var(--amber)'}" onclick="ejecutarAbono('${e[0]}', ${saldoRestante}, '${e[1]}')">
+                    <div><b>${e[0]}</b><br><span class="badge" style="color:${esDebo?'var(--rose)':'var(--amber)'}">${esDebo?'Yo Debo':'Me deben'}</span></div>
+                    <div style="text-align:right">
+                        <b>${saldoRestante.toLocaleString()} Bs</b><br>
+                        <small style="color:var(--cyan)">$ ${(saldoRestante/db.tasa).toFixed(2)}</small>
+                    </div>
                 </div>`;
-                pendHtml += item;
+                pendHtml += card;
             }
         });
 
-        document.getElementById('bs-total').innerText = saldo.toLocaleString() + " Bs";
-        document.getElementById('bs-total').style.color = saldo < 0 ? "var(--rose)" : "white";
-        document.getElementById('usd-total').innerText = "≈ " + (saldo / db.tasa).toFixed(2) + " $";
+        document.getElementById('bs-total').innerText = saldoBancario.toLocaleString() + " Bs";
+        document.getElementById('bs-total').style.color = saldoBancario < 0 ? "var(--rose)" : "white";
+        document.getElementById('usd-total').innerText = "≈ " + (saldoBancario / db.tasa).toFixed(2) + " $";
         document.getElementById('kpi-debo').innerText = debo.toLocaleString() + " Bs";
         document.getElementById('kpi-calle').innerText = calle.toLocaleString() + " Bs";
-        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ Sin deudas";
-        document.getElementById('lista-para-abonar').innerHTML = pendHtml || "No hay cuentas";
+        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ Todo al día";
+        document.getElementById('lista-para-abonar').innerHTML = pendHtml;
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
 
-    function closeToast(isCorrect) {
+    function closeToast(ok) {
         document.getElementById('toast').classList.remove('show');
-        if(isCorrect) {
-            localStorage.setItem('last_tasa_confirmed', db.tasa);
+        if(ok) {
+            localStorage.setItem('confirmed_tasa', db.tasa);
             document.getElementById('bulb-icon').classList.remove('active');
-        } else {
-            setTasa();
-        }
+        } else { setTasa(); }
     }
 
     async function setTasa() {
-        let n = prompt("Nueva Tasa BCV:", db.tasa);
+        let n = prompt("Nueva Tasa:", db.tasa);
         if(n && n !== db.tasa) {
-            document.body.style.opacity="0.5";
             await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({accion:"CAMBIAR_TASA", valor: parseFloat(n)})});
-            localStorage.setItem('last_tasa_confirmed', n);
+            localStorage.setItem('confirmed_tasa', n);
             location.reload();
         }
     }
 
-    function ejecutarAbono(nombre, saldoBs, tipo) {
-        let monto = prompt(`Registrar pago para ${nombre}:\nSaldo: ${saldoBs} Bs`, saldoBs);
-        if(monto) {
-            enviarData({
-                accion: "REGISTRAR",
-                tipo: tipo === "Proveedor" ? "Abono_Pagado" : "Abono_Cobrado",
-                persona: nombre,
-                monto: parseFloat(monto),
-                tasa: db.tasa,
-                limpiar: true
-            });
-        }
+    function ejecutarAbono(nom, sal, tipo) {
+        let m = prompt(`Registrar pago para ${nom}\nSaldo actual: ${sal} Bs`, sal);
+        if(m) enviar({accion:"REGISTRAR", tipo: tipo==="Proveedor"?"Abono_Pagado":"Abono_Cobrado", persona:nom, monto:parseFloat(m), tasa:db.tasa});
     }
 
     async function registrarRapido(tipo) {
         let p = prompt("Nombre:");
         let m = prompt("Monto Bs:");
-        if(p && m) enviarData({accion: "REGISTRAR", tipo, persona: p, monto: parseFloat(m), tasa: db.tasa});
+        if(p && m) enviar({accion:"REGISTRAR", tipo, persona:p, monto:parseFloat(m), tasa:db.tasa});
     }
 
-    async function enviarData(data) {
+    async function enviar(d) {
         document.body.style.opacity="0.5";
-        await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(data)});
+        await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(d)});
         location.reload();
     }
 
