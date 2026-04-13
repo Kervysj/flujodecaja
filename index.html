@@ -3,46 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Minimal</title>
+    <title>AdriSweets Pro - Smart Alert</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
         
-        /* Encabezado Limpio */
-        .header { padding: 30px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; position: relative; }
+        .header { padding: 35px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; position: relative; }
         
-        /* Indicador sutil de tasa */
-        .tasa-mini { 
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: 'Orbitron'; font-size: 0.7rem; color: var(--gray); margin-bottom: 10px;
+        /* Bombillo Intermitente más grande */
+        .tasa-container { 
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            background: rgba(31, 41, 55, 0.5); padding: 8px 18px; border-radius: 50px;
+            font-family: 'Orbitron'; font-size: 0.85rem; color: #fff; margin-bottom: 15px;
+            border: 1px solid #374151;
         }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray); transition: 0.3s; }
-        .status-dot.active { background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: pulse 2s infinite; }
+        .bulb { font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
+        .bulb.active { 
+            filter: grayscale(0); 
+            animation: glow 1.5s infinite alternate; 
+        }
 
-        .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; letter-spacing: -1px; }
-        .usd-val { color: var(--cyan); font-weight: bold; opacity: 0.9; font-size: 1.1rem; }
+        .main-balance { font-family: 'Orbitron'; font-size: 2.5rem; margin: 5px 0; letter-spacing: -1px; }
+        .usd-val { color: var(--cyan); font-weight: bold; opacity: 0.9; font-size: 1.2rem; }
 
-        /* Resto de la interfaz */
-        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -20px; }
-        .kpi-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid #1f2937; text-align: center; }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        /* Notificación Sutil de Inicio */
+        .toast-alert {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(200%);
+            background: var(--card); border: 1px solid var(--amber); padding: 12px 20px;
+            border-radius: 15px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000; width: 85%;
+        }
+        .toast-alert.show { transform: translateX(-50%) translateY(0); }
+
+        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -25px; }
+        .kpi-card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; }
+        
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 20px; }
         .btn-touch { background: var(--card); padding: 25px 15px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; }
         
-        .list-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 6px solid transparent; display: flex; align-items: center; justify-content: space-between; }
+        .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; align-items: center; justify-content: space-between; }
         
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        @keyframes glow { 
+            from { text-shadow: 0 0 2px var(--amber); opacity: 1; } 
+            to { text-shadow: 0 0 15px var(--amber); opacity: 0.5; } 
+        }
+
         .view { display: none; padding: 20px; }
         .view.active { display: block; }
     </style>
 </head>
 <body>
 
+<div id="toast" class="toast-alert">
+    <span>💡</span>
+    <div style="font-size: 0.8rem;">¿Tasa <b><span id="tasa-toast">0</span></b> es correcta?</div>
+    <button onclick="closeToast()" style="background:var(--amber); border:none; color:#000; padding:5px 10px; border-radius:8px; font-weight:bold; font-size:0.7rem;">SÍ</button>
+</div>
+
 <div class="header">
-    <div class="tasa-mini" onclick="setTasa()">
-        <div id="dot" class="status-dot"></div>
-        BCV: <span id="tasa-val">0.00</span>
+    <div class="tasa-container" onclick="setTasa()">
+        <span id="bulb-icon" class="bulb">💡</span>
+        <span>BCV: <span id="tasa-val">0.00</span></span>
     </div>
     <div id="bs-total" class="main-balance">0.00 Bs</div>
     <div id="usd-total" class="usd-val">≈ 0.00 $</div>
@@ -71,18 +95,22 @@
         const r = await fetch(SCRIPT_URL);
         db = await r.json();
         
-        // Lógica del punto de advertencia sutil
-        const lastTasa = localStorage.getItem('last_tasa');
-        if(lastTasa && lastTasa !== db.tasa.toString()) {
-            document.getElementById('dot').classList.add('active'); // Se pone amarillo si cambió
+        document.getElementById('tasa-val').innerText = db.tasa;
+        document.getElementById('tasa-toast').innerText = db.tasa;
+
+        // Lógica del bombillo y mensaje inicial
+        const lastTasa = localStorage.getItem('last_tasa_seen');
+        if(lastTasa !== db.tasa.toString()) {
+            document.getElementById('bulb-icon').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('toast').classList.add('show');
+            }, 1000);
         }
-        localStorage.setItem('last_tasa', db.tasa);
         
         render();
     }
 
     function render() {
-        document.getElementById('tasa-val').innerText = db.tasa;
         let saldo = parseFloat(db.saldoInicial) || 0;
         let debo = 0, calle = 0, pendHtml = "";
 
@@ -94,7 +122,7 @@
 
         db.entidades.slice(1).forEach(e => {
             let s = parseFloat(e[2]);
-            if(Math.abs(s) > 3) { // Limpieza automática de saldos basura
+            if(Math.abs(s) > 3.5) { // Filtro reforzado para el 1.4 Bs
                 let esD = e[1] === "Proveedor";
                 if(esD) debo += s; else calle += s;
                 pendHtml += `<div class="list-item" style="border-left-color:${esD?'var(--rose)':'var(--amber)'}">
@@ -109,6 +137,12 @@
         document.getElementById('kpi-debo').innerText = debo.toLocaleString() + " Bs";
         document.getElementById('kpi-calle').innerText = calle.toLocaleString() + " Bs";
         document.getElementById('lista-pendientes').innerHTML = pendHtml;
+    }
+
+    function closeToast() {
+        document.getElementById('toast').classList.remove('show');
+        localStorage.setItem('last_tasa_seen', db.tasa);
+        document.getElementById('bulb-icon').classList.remove('active');
     }
 
     async function setTasa() {
