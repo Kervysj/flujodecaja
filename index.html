@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - RealTime Alerts</title>
+    <title>AdriSweets Pro - Tasa Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
         
-        /* HEADER */
         .header { padding: 30px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; }
         .tasa-container { 
             display: inline-flex; align-items: center; gap: 10px; background: rgba(31,41,55,0.5); 
             padding: 8px 18px; border-radius: 50px; border: 1px solid #374151;
-            font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 15px;
+            font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 15px; cursor: pointer;
         }
         .bulb { font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
         .bulb.active { filter: grayscale(0); animation: glow 1.5s infinite alternate; }
         @keyframes glow { from { text-shadow: 0 0 2px var(--amber); opacity: 1; } to { text-shadow: 0 0 15px var(--amber); opacity: 0.6; } }
 
-        /* ALERTA FLOTANTE (TOAST) */
+        /* ALERTA DE TASA (SIEMPRE VISIBLE AL INICIO) */
         .toast-alert {
             position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(250%);
-            background: var(--card); border: 2px solid var(--amber); padding: 20px; width: 92%;
-            border-radius: 25px; z-index: 9999; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            background: var(--card); border: 2px solid var(--amber); padding: 25px; width: 92%;
+            border-radius: 25px; z-index: 10000; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
         }
         .toast-alert.show { transform: translateX(-50%) translateY(0); }
 
@@ -34,7 +33,7 @@
         .usd-val { color: var(--cyan); font-weight: bold; font-size: 1.1rem; opacity: 0.9; }
 
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 20px; }
-        .btn-touch { background: var(--card); padding: 25px 10px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; }
+        .btn-touch { background: var(--card); padding: 25px 10px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; cursor: pointer; }
         
         .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; text-transform: uppercase; margin-top: 5px; display: inline-block; }
@@ -50,17 +49,17 @@
 <body>
 
 <div id="toast" class="toast-alert">
-    <div style="text-align:center; font-family:'Orbitron'; font-size: 0.8rem; color: var(--amber); margin-bottom:12px;">⚠️ VALIDACIÓN DE TASA</div>
-    <div style="text-align:center; font-size: 1rem; margin-bottom:15px;">¿La tasa BCV <b><span id="tasa-toast">0</span></b> es la de hoy?</div>
+    <div style="text-align:center; font-family:'Orbitron'; font-size: 0.8rem; color: var(--amber); margin-bottom:12px;">⚠️ CONFIRMACIÓN DE TASA</div>
+    <div style="text-align:center; font-size: 1.1rem; margin-bottom:20px;">¿La tasa BCV actual es <b><span id="tasa-toast">---</span></b>?</div>
     <div style="display:flex; gap:12px;">
-        <button onclick="closeToast(true)" style="flex:1; background:var(--green); border:none; padding:12px; border-radius:12px; font-weight:bold; color:#000;">SÍ, USAR ESTA</button>
-        <button onclick="closeToast(false)" style="flex:1; background:var(--rose); border:none; padding:12px; border-radius:12px; font-weight:bold; color:#fff;">NO, CAMBIAR</button>
+        <button onclick="closeToast(true)" style="flex:1; background:var(--green); border:none; padding:15px; border-radius:15px; font-weight:bold; color:#000;">SÍ, ES CORRECTA</button>
+        <button onclick="closeToast(false)" style="flex:1; background:var(--rose); border:none; padding:15px; border-radius:15px; font-weight:bold; color:#fff;">NO, CAMBIAR</button>
     </div>
 </div>
 
 <div class="header">
     <div class="tasa-container" onclick="setTasa()">
-        <span id="bulb-icon" class="bulb">💡</span>
+        <span id="bulb-icon" class="bulb active">💡</span>
         <span>BCV: <span id="tasa-val">0.00</span></span>
     </div>
     <div id="bs-total" class="main-balance">0.00 Bs</div>
@@ -78,7 +77,6 @@
 </div>
 
 <div id="v-abonos" class="view">
-    <h3 style="text-align:center; font-family:'Orbitron'; color:var(--cyan); font-size:0.9rem;">SELECCIONA CUENTA</h3>
     <div id="lista-para-abonar"></div>
     <button onclick="nav('v-dash')" style="width:100%; color:var(--gray); background:none; border:none; padding:20px; font-family:'Orbitron';">← VOLVER</button>
 </div>
@@ -103,16 +101,11 @@
         document.getElementById('tasa-val').innerText = db.tasa;
         document.getElementById('tasa-toast').innerText = db.tasa;
 
-        // LÓGICA DE ALERTA AL ABRIR/REFRESCAR
-        const ultimaConfirmada = localStorage.getItem('confirmed_tasa');
-        
-        // Si la tasa del Excel es distinta a la última que aceptaste, salta la alerta
-        if (ultimaConfirmada !== db.tasa.toString()) {
-            document.getElementById('bulb-icon').classList.add('active');
-            setTimeout(() => {
-                document.getElementById('toast').classList.add('show');
-            }, 500); // Aparece medio segundo después de cargar
-        }
+        // ESTO FUERZA LA ALERTA SIEMPRE AL CARGAR
+        document.getElementById('bulb-icon').classList.add('active');
+        setTimeout(() => {
+            document.getElementById('toast').classList.add('show');
+        }, 600); 
 
         render();
     }
@@ -143,7 +136,7 @@
 
         document.getElementById('bs-total').innerText = saldoBancario.toFixed(2) + " Bs";
         document.getElementById('usd-total').innerText = "≈ " + (saldoBancario / db.tasa).toFixed(2) + " $";
-        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ TODO AL DÍA";
+        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ CUENTAS AL DÍA";
         document.getElementById('lista-para-abonar').innerHTML = pendHtml;
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
@@ -151,19 +144,16 @@
     function closeToast(ok) {
         document.getElementById('toast').classList.remove('show');
         if(ok) {
-            // Guardamos que esta tasa ya fue aceptada
-            localStorage.setItem('confirmed_tasa', db.tasa);
             document.getElementById('bulb-icon').classList.remove('active');
         } else {
-            setTasa(); // Si dice que NO, abre para cambiarla
+            setTasa();
         }
     }
 
     async function setTasa() {
-        let n = prompt("Nueva Tasa BCV:", db.tasa);
+        let n = prompt("Ingresa la Tasa BCV correcta:", db.tasa);
         if(n && n !== db.tasa) {
             enviar({accion:"CAMBIAR_TASA", valor: parseFloat(n)});
-            localStorage.setItem('confirmed_tasa', n);
         }
     }
 
@@ -172,7 +162,7 @@
         if(!nombre) return;
         let existe = db.entidades.find(e => e[0].toUpperCase() === nombre.toUpperCase());
         if(existe) {
-            let opcion = confirm(`"${nombre}" YA EXISTE.\n¿Sumar monto?\n(Aceptar=Sumar / Cancelar=Nombre nuevo)`);
+            let opcion = confirm(`"${nombre}" YA EXISTE.\n¿Sumar a su cuenta?\n(Aceptar=Sumar / Cancelar=Nombre nuevo)`);
             if(!opcion) {
                 let nuevo = prompt(`Ingresa nombre DIFERENTE:`);
                 if(!nuevo || nuevo.toUpperCase() === nombre.toUpperCase()) return;
