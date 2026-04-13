@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro V2.6</title>
+    <title>AdriSweets Pro - Anti-Duplicados</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --card: #111827; --cyan: #22d3ee; --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --gray: #475569; }
@@ -11,80 +11,44 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; }
         
         .header { padding: 30px 20px; background: #0f172a; border-bottom: 1px solid #1f2937; text-align: center; }
-        .tasa-container { 
-            display: inline-flex; align-items: center; gap: 10px; background: rgba(31,41,55,0.5); 
-            padding: 8px 15px; border-radius: 50px; border: 1px solid #374151;
-            font-family: 'Orbitron'; font-size: 0.8rem; margin-bottom: 15px;
-        }
-        .bulb { font-size: 1.1rem; filter: grayscale(1); }
-        .bulb.active { filter: grayscale(0); animation: glow 1.5s infinite alternate; }
-
         .main-balance { font-family: 'Orbitron'; font-size: 2.3rem; margin: 5px 0; }
         .usd-val { color: var(--cyan); font-weight: bold; font-size: 1.1rem; opacity: 0.9; }
 
-        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-top: -20px; }
-        .kpi-card { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid #1f2937; text-align: center; }
-
-        .toast-alert {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(200%);
-            background: var(--card); border: 1px solid var(--amber); padding: 15px; width: 90%;
-            border-radius: 20px; z-index: 2000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .toast-alert.show { transform: translateX(-50%) translateY(0); }
-
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 20px; }
-        .btn-touch { background: var(--card); padding: 22px 10px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; }
+        .btn-touch { background: var(--card); padding: 25px 10px; border-radius: 20px; border: 1px solid #1f2937; text-align: center; border-bottom: 4px solid transparent; cursor: pointer; }
         
-        .list-item { background: var(--card); padding: 15px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
-        .badge { font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .list-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 12px; border-left: 6px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; text-transform: uppercase; margin-top: 5px; display: inline-block; }
 
-        @keyframes glow { from { text-shadow: 0 0 2px var(--amber); } to { text-shadow: 0 0 12px var(--amber); } }
         .view { display: none; padding: 20px; }
         .view.active { display: block; }
 
         .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
-        .nav-btn { background: none; border: none; color: var(--gray); font-family: 'Orbitron'; font-size: 0.7rem; font-weight: bold; }
+        .nav-btn { background: none; border: none; color: var(--gray); font-family: 'Orbitron'; font-size: 0.75rem; font-weight: bold; }
         .nav-btn.active { color: var(--cyan); }
     </style>
 </head>
 <body>
 
-<div id="toast" class="toast-alert">
-    <div style="text-align:center; font-size: 0.9rem; margin-bottom:10px;">¿Tasa BCV <b><span id="tasa-toast">0</span></b> es correcta?</div>
-    <div style="display:flex; gap:10px;">
-        <button onclick="closeToast(true)" style="flex:1; background:var(--green); border:none; padding:10px; border-radius:10px; font-weight:bold;">SÍ</button>
-        <button onclick="closeToast(false)" style="flex:1; background:var(--rose); border:none; padding:10px; border-radius:10px; font-weight:bold; color:#fff;">NO</button>
-    </div>
-</div>
-
 <div class="header">
-    <div class="tasa-container" onclick="setTasa()">
-        <span id="bulb-icon" class="bulb">💡</span>
-        <span>BCV: <span id="tasa-val">0.00</span></span>
-    </div>
     <div id="bs-total" class="main-balance">0.00 Bs</div>
     <div id="usd-total" class="usd-val">≈ 0.00 $</div>
 </div>
 
-<div class="kpi-row">
-    <div class="kpi-card" style="border-bottom: 3px solid var(--rose)"><small>DEBO</small><br><b id="kpi-debo" style="color:var(--rose)">0 Bs</b></div>
-    <div class="kpi-card" style="border-bottom: 3px solid var(--amber)"><small>EN CALLE</small><br><b id="kpi-calle" style="color:var(--amber)">0 Bs</b></div>
-</div>
-
 <div id="v-dash" class="view active">
     <div class="action-grid">
-        <div class="btn-touch" style="border-bottom-color:var(--green)" onclick="registrarRapido('Venta')">💰<br><small>Venta</small></div>
-        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarRapido('Deuda')">📦<br><small>Yo Debo</small></div>
-        <div class="btn-touch" style="border-bottom-color:var(--amber)" onclick="registrarRapido('Fiado')">👤<br><small>Fiar</small></div>
-        <div class="btn-touch" style="border-bottom-color:var(--cyan)" onclick="nav('v-abonos')">💸<br><small>Cobrar/Pagar</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--green)" onclick="registrarSeguro('Venta')">💰<br><small>Venta</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--rose)" onclick="registrarSeguro('Deuda')">📦<br><small>Nueva Deuda</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--amber)" onclick="registrarSeguro('Fiado')">👤<br><small>Fiar Dulce</small></div>
+        <div class="btn-touch" style="border-bottom-color:var(--cyan)" onclick="nav('v-abonos')">💸<br><small>Pagar/Cobrar</small></div>
     </div>
     <div id="lista-pendientes-dash"></div>
 </div>
 
 <div id="v-abonos" class="view">
-    <div style="text-align:center; color:var(--cyan); font-family:'Orbitron'; margin-bottom:20px;">CUENTAS PENDIENTES</div>
+    <h3 style="text-align:center; font-family:'Orbitron'; color:var(--cyan); font-size:0.9rem;">SELECCIONA PARA ABONAR</h3>
     <div id="lista-para-abonar"></div>
-    <button onclick="nav('v-dash')" style="width:100%; color:var(--gray); background:none; border:none; padding:15px; font-family:'Orbitron';">← VOLVER</button>
+    <button onclick="nav('v-dash')" style="width:100%; color:var(--gray); background:none; border:none; padding:20px; font-family:'Orbitron';">← VOLVER</button>
 </div>
 
 <div id="v-hist" class="view">
@@ -103,83 +67,69 @@
     async function init() {
         const r = await fetch(SCRIPT_URL);
         db = await r.json();
-        document.getElementById('tasa-val').innerText = db.tasa;
-        document.getElementById('tasa-toast').innerText = db.tasa;
-
-        if(localStorage.getItem('confirmed_tasa') !== db.tasa.toString()) {
-            document.getElementById('bulb-icon').classList.add('active');
-            setTimeout(() => document.getElementById('toast').classList.add('show'), 800);
-        }
         render();
     }
 
     function render() {
         let saldoBancario = parseFloat(db.saldoInicial) || 0;
-        let debo = 0, calle = 0, pendHtml = "", histHtml = "";
+        let pendHtml = "", histHtml = "";
 
-        // Procesar Movimientos para Saldo e Historial
         db.movimientos.slice(1).reverse().forEach(m => {
             let mnt = parseFloat(m[3]) || 0;
             if(["Venta","Abono_Cobrado"].includes(m[1])) saldoBancario += mnt;
             if(["Gasto","Abono_Pagado","Deuda"].includes(m[1])) saldoBancario -= mnt;
-            histHtml += `<div class="list-item"><div><b>${m[2]}</b><br><small>${m[1]}</small></div><b>${mnt} Bs</b></div>`;
+            histHtml += `<div class="list-item"><div><b>${m[2]}</b><br><small>${m[1]}</small></div><b>${mnt.toFixed(2)} Bs</b></div>`;
         });
 
-        // Procesar Entidades (Saldos RESTANTES)
         db.entidades.slice(1).forEach(e => {
-            let saldoRestante = parseFloat(e[2]);
-            if(Math.abs(saldoRestante) > 5) { // Filtro para montos basura
-                let esDebo = e[1] === "Proveedor";
-                if(esDebo) debo += saldoRestante; else calle += saldoRestante;
-
-                let card = `
-                <div class="list-item" style="border-left-color:${esDebo?'var(--rose)':'var(--amber)'}" onclick="ejecutarAbono('${e[0]}', ${saldoRestante}, '${e[1]}')">
-                    <div><b>${e[0]}</b><br><span class="badge" style="color:${esDebo?'var(--rose)':'var(--amber)'}">${esDebo?'Yo Debo':'Me deben'}</span></div>
-                    <div style="text-align:right">
-                        <b>${saldoRestante.toLocaleString()} Bs</b><br>
-                        <small style="color:var(--cyan)">$ ${(saldoRestante/db.tasa).toFixed(2)}</small>
-                    </div>
+            let sActual = Math.round(parseFloat(e[2]) * 100) / 100;
+            if(Math.abs(sActual) >= 0.01) { 
+                let esD = e[1] === "Proveedor";
+                let item = `
+                <div class="list-item" style="border-left-color:${esD?'var(--rose)':'var(--amber)'}" onclick="ejecutarAbono('${e[0]}', ${sActual}, '${e[1]}')">
+                    <div><b>${e[0]}</b><br><span class="badge" style="color:${esD?'var(--rose)':'var(--amber)'}">${esD?'Yo Debo':'Me Deben'}</span></div>
+                    <div style="text-align:right"><b>${sActual.toFixed(2)} Bs</b><br><small style="color:var(--cyan)">$ ${(sActual/db.tasa).toFixed(2)}</small></div>
                 </div>`;
-                pendHtml += card;
+                pendHtml += item;
             }
         });
 
-        document.getElementById('bs-total').innerText = saldoBancario.toLocaleString() + " Bs";
-        document.getElementById('bs-total').style.color = saldoBancario < 0 ? "var(--rose)" : "white";
+        document.getElementById('bs-total').innerText = saldoBancario.toFixed(2) + " Bs";
         document.getElementById('usd-total').innerText = "≈ " + (saldoBancario / db.tasa).toFixed(2) + " $";
-        document.getElementById('kpi-debo').innerText = debo.toLocaleString() + " Bs";
-        document.getElementById('kpi-calle').innerText = calle.toLocaleString() + " Bs";
-        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ Todo al día";
+        document.getElementById('lista-pendientes-dash').innerHTML = pendHtml || "✅ TODO AL DÍA";
         document.getElementById('lista-para-abonar').innerHTML = pendHtml;
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
 
-    function closeToast(ok) {
-        document.getElementById('toast').classList.remove('show');
-        if(ok) {
-            localStorage.setItem('confirmed_tasa', db.tasa);
-            document.getElementById('bulb-icon').classList.remove('active');
-        } else { setTasa(); }
-    }
+    // FUNCIÓN CON REGLAS DE NOMBRE ESTRICTAS
+    async function registrarSeguro(tipo) {
+        let nombre = prompt("Ingresa el nombre:").trim();
+        if(!nombre) return;
 
-    async function setTasa() {
-        let n = prompt("Nueva Tasa:", db.tasa);
-        if(n && n !== db.tasa) {
-            await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({accion:"CAMBIAR_TASA", valor: parseFloat(n)})});
-            localStorage.setItem('confirmed_tasa', n);
-            location.reload();
+        // Comprobar si el nombre ya existe
+        let existe = db.entidades.find(e => e[0].toUpperCase() === nombre.toUpperCase());
+
+        if(existe) {
+            let opcion = confirm(`⚠️ EL NOMBRE "${nombre}" YA EXISTE EN EL EXCEL.\n\n¿Es la MISMA persona y quieres SUMARLE este monto?\n\n(Aceptar = Sumar / Cancelar = Escribir otro nombre)`);
+            
+            if(!opcion) {
+                // Si el usuario cancela, le pedimos un nombre nuevo obligatoriamente
+                let nuevoNombre = prompt(`Ingresa un nombre DIFERENTE para evitar errores (Ej: ${nombre} 2 o ${nombre} B):`);
+                if(!nuevoNombre || nuevoNombre.toUpperCase() === nombre.toUpperCase()) {
+                    alert("Operación cancelada. El nombre debe ser diferente para no confundir al Excel.");
+                    return;
+                }
+                nombre = nuevoNombre;
+            }
         }
+
+        let monto = prompt("Monto en Bs:");
+        if(monto) enviar({accion:"REGISTRAR", tipo, persona:nombre, monto:parseFloat(monto), tasa:db.tasa});
     }
 
     function ejecutarAbono(nom, sal, tipo) {
-        let m = prompt(`Registrar pago para ${nom}\nSaldo actual: ${sal} Bs`, sal);
+        let m = prompt(`ABONO para ${nom}\nSaldo: ${sal} Bs`, sal);
         if(m) enviar({accion:"REGISTRAR", tipo: tipo==="Proveedor"?"Abono_Pagado":"Abono_Cobrado", persona:nom, monto:parseFloat(m), tasa:db.tasa});
-    }
-
-    async function registrarRapido(tipo) {
-        let p = prompt("Nombre:");
-        let m = prompt("Monto Bs:");
-        if(p && m) enviar({accion:"REGISTRAR", tipo, persona:p, monto:parseFloat(m), tasa:db.tasa});
     }
 
     async function enviar(d) {
