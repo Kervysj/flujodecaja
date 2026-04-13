@@ -3,137 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>AdriSweets Pro - Gestión Total</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #05070a; --card: #111827; --cyan: #06b6d4; --amber: #f59e0b; --rose: #f43f5e; --text: #e2e8f0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 90px; }
+        :root {
+            --bg: #020617; --card: #1e293b; --cyan: #22d3ee; 
+            --rose: #f43f5e; --amber: #fbbf24; --green: #10b981; --text: #f1f5f9;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; overflow-x: hidden; }
         
-        /* Cabecera Dinámica */
-        .header { padding: 25px; text-align: center; background: #0f172a; border-bottom: 1px solid #1f2937; position: relative; }
-        .btn-tasa { position: absolute; top: 20px; right: 20px; background: none; border: 1px solid var(--cyan); color: var(--cyan); border-radius: 8px; padding: 5px; font-size: 0.7rem; }
-        
-        .main-val { font-family: 'Orbitron'; font-size: 2.2rem; color: #fff; margin: 10px 0; }
-        .sub-val { color: #94a3b8; font-size: 1.1rem; }
+        /* Dashboard Header */
+        .header { padding: 35px 20px; background: linear-gradient(180deg, #0f172a 0%, var(--bg) 100%); border-bottom: 1px solid #334155; text-align: center; }
+        .tasa-pill { border: 1.5px solid var(--cyan); color: var(--cyan); padding: 6px 16px; border-radius: 50px; font-family: 'Orbitron'; font-size: 0.75rem; display: inline-block; margin-bottom: 15px; background: rgba(34, 211, 238, 0.05); }
+        .bal-label { font-size: 0.8rem; color: #94a3b8; letter-spacing: 1px; font-weight: 500; }
+        .bal-main { font-family: 'Orbitron'; font-size: 2.4rem; margin: 8px 0; color: #fff; }
+        .bal-sub { color: var(--cyan); font-size: 1.1rem; font-weight: 300; opacity: 0.9; }
 
-        /* Botones de Acción Rápida (UX Mejorada) */
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .action-card { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #1f2937; transition: 0.2s; }
-        .action-card:active { transform: scale(0.95); background: #1e293b; }
-        .action-card i { display: block; font-size: 1.5rem; margin-bottom: 8px; }
+        /* KPI Grid (Resumen rápido) */
+        .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; margin-top: -20px; }
+        .kpi-box { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .kpi-box span { display: block; font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
+        .kpi-box b { font-family: 'Orbitron'; font-size: 1rem; }
 
-        .view { display: none; padding: 20px; animation: fadeIn 0.3s; }
+        /* Botones de Acción (Touch First) */
+        .grid-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 20px; }
+        .btn-act { background: var(--card); padding: 25px 15px; border-radius: 22px; border: 1px solid #334155; text-align: center; transition: 0.2s; }
+        .btn-act:active { transform: scale(0.96); background: #334155; }
+        .btn-act i { display: block; font-size: 1.6rem; margin-bottom: 10px; }
+        .btn-act label { font-size: 0.85rem; font-weight: 600; display: block; }
+
+        /* Listas y Filtros */
+        .view { display: none; padding: 20px; animation: slideUp 0.3s ease-out; }
         .view.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Estilos de Formulario */
-        .modal-body { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--cyan); }
-        input { width: 100%; padding: 15px; margin: 10px 0; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 12px; box-sizing: border-box; }
-        .btn-confirm { width: 100%; padding: 18px; background: var(--cyan); color: #000; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; }
+        .list-item { background: var(--card); padding: 18px; border-radius: 18px; margin-bottom: 12px; border-left: 5px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .info-icon { background: var(--cyan); color: #000; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.7rem; }
 
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #1f2937; }
-        .nav-btn { background: none; border: none; color: #64748b; font-size: 0.7rem; font-weight: bold; }
+        /* Formulario Modal */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; padding:20px; align-items:center; }
+        .modal-content { background:var(--card); width:100%; border-radius:25px; padding:25px; border: 1px solid var(--cyan); }
+        input, select { width:100%; padding:16px; margin:12px 0; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:15px; font-size: 1rem; }
+        .btn-send { width:100%; padding:18px; background:var(--cyan); color:#000; border:none; border-radius:15px; font-weight:bold; font-size:1rem; margin-top:10px; }
+
+        /* Nav Bar */
+        .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #334155; z-index: 900; }
+        .nav-btn { background: none; border: none; color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .nav-btn.active { color: var(--cyan); }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <button class="btn-tasa" onclick="updateTasaManual()">⚙️ TASA BCV</button>
-        <div id="tasa-display" style="color:var(--cyan); font-family: 'Orbitron'; font-size: 0.8rem;">BCV: 0.00</div>
-        <div class="main-val" id="bal-bs">0.00 Bs</div>
-        <div class="sub-val" id="bal-usd">0.00 $</div>
+        <div class="tasa-pill" onclick="setTasa()">BCV: <span id="tasa-ui">0.00</span> ⚙️</div>
+        <div class="bal-label">SALDO EN CUENTA</div>
+        <div class="bal-main" id="total-bs">0.00 Bs</div>
+        <div class="bal-sub" id="total-usd">≈ 0.00 $</div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-box" style="border-top: 3px solid var(--rose)">
+            <span>Debo (Salida)</span>
+            <b id="kpi-debo" style="color:var(--rose)">0 Bs</b>
+        </div>
+        <div class="kpi-box" style="border-top: 3px solid var(--amber)">
+            <span>En Calle (Me deben)</span>
+            <b id="kpi-calle" style="color:var(--amber)">0 Bs</b>
+        </div>
     </div>
 
     <div id="v-dash" class="view active">
-        <div class="action-grid">
-            <div class="action-card" onclick="openReg('Ingreso', 'VENTA DE DULCES')">💰 <br> Venta</div>
-            <div class="action-card" onclick="openReg('Abono_Prov', 'PAGO A PROVEEDOR')">🚚 <br> Pagar Prov</div>
-            <div class="action-card" onclick="openReg('Cobro_Cli', 'COBRO A CLIENTE')">🤝 <br> Cobrar Fiado</div>
-            <div class="action-card" onclick="openReg('Fiado_Cli', 'ENTREGA FIADO')">📝 <br> Dar Fiado</div>
+        <div class="grid-actions">
+            <div class="btn-act" onclick="showForm('Venta', 'Ingreso Directo')">
+                <i style="color:var(--green)">💰</i><label>Venta</label>
+            </div>
+            <div class="btn-act" onclick="showForm('Deuda', 'Nueva Deuda (Prov)')">
+                <i style="color:var(--rose)">📦</i><label>Debo a...</label>
+            </div>
+            <div class="btn-act" onclick="showForm('Fiado', 'Dinero a la Calle')">
+                <i style="color:var(--amber)">📝</i><label>Fiar Dulces</label>
+            </div>
+            <div class="btn-act" onclick="openTouchSelector('Abono')">
+                <i style="color:var(--cyan)">💸</i><label>Pagar / Cobrar</label>
+            </div>
         </div>
-        <h4 style="margin-top:30px; color:#64748b;">Estado Actual</h4>
-        <div id="resumen-mini"></div>
     </div>
 
-    <div id="v-reg" class="view">
-        <div class="modal-body">
-            <h3 id="reg-title" style="color:var(--cyan); margin-top:0;">Registro</h3>
-            <input type="text" id="f-benef" placeholder="¿A quién? (Nombre)">
+    <div id="v-list" class="view">
+        <h3 style="font-family: 'Orbitron'; font-size: 1rem; color: var(--rose);">CUENTAS POR PAGAR (DEUDAS)</h3>
+        <div id="lista-deudas"></div>
+    </div>
+
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="m-titulo" style="color:var(--cyan); margin-top:0;">Registro</h3>
+            
+            <div id="touch-selector" style="display:none;">
+                <label style="font-size:0.8rem; color:#94a3b8;">Selecciona Persona/Proveedor:</label>
+                <select id="f-persona-select" onchange="document.getElementById('f-persona').value = this.value"></select>
+            </div>
+            
+            <input type="text" id="f-persona" placeholder="Nombre de Persona / Prov">
             <input type="number" id="f-monto" placeholder="Monto en Bolívares">
-            <input type="text" id="f-ref" placeholder="Ref / Pago Móvil">
-            <button class="btn-confirm" onclick="enviar()">CONFIRMAR Y GUARDAR</button>
-            <button onclick="nav('v-dash', null)" style="background:none; border:none; color:#64748b; width:100%; margin-top:15px;">Cancelar</button>
+            <input type="date" id="f-vence" title="Fecha de Vencimiento">
+            <input type="text" id="f-ref" placeholder="Referencia / Nota">
+            <button class="btn-send" onclick="enviar()">GUARDAR CAMBIOS</button>
+            <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#64748b; margin-top:15px; font-weight:bold;">CANCELAR</button>
         </div>
     </div>
 
-    <nav class="nav-bar">
-        <button class="nav-btn active" onclick="nav('v-dash', this)">INICIO</button>
-        <button class="nav-btn" onclick="nav('v-prov', this)">PROVEEDORES</button>
-        <button class="nav-btn" onclick="nav('v-cli', this)">CLIENTES</button>
+    <nav class="nav">
+        <button class="nav-btn active" onclick="nav('v-dash', this)">Caja</button>
+        <button class="nav-btn" onclick="nav('v-list', this)">Deudas</button>
     </nav>
 
     <script>
-        const API = "TU_URL_AQUÍ"; // REEMPLAZA CON TU URL
-        let tasa = 1, tipoActual = '', conceptoActual = '';
+        const API = "https://script.google.com/macros/s/AKfycbx79T15qYpqB09Vf22uGiABkH3CLeKaBIi7yiYY2s60Kufk-Wqu4eB6WY2sLzNEAql_/exec";
+        let store = {};
+        let currentAction = "";
 
         async function init() {
             const r = await fetch(API);
-            const d = await r.json();
-            tasa = d.tasa;
-            document.getElementById('tasa-display').innerText = `BCV: ${tasa.toFixed(2)}`;
-            render(d);
+            store = await r.json();
+            document.getElementById('tasa-ui').innerText = store.tasa;
+            render();
         }
 
-        function render(data) {
-            let disp = 0;
-            data.movimientos.slice(1).forEach(m => {
+        function render() {
+            let saldoVal = parseFloat(store.saldoInicial);
+            let deboVal = 0, calleVal = 0;
+            let deudasHtml = "";
+
+            store.movimientos.slice(1).forEach(m => {
                 let mnt = parseFloat(m[3]) || 0;
-                if(m[1] === "Ingreso" || m[1] === "Cobro_Cli") disp += mnt;
-                else disp -= mnt;
+                // Lógica de Saldo: Solo entra dinero real
+                if(m[1] === "Venta" || m[1] === "Abono_Cobrado") saldoVal += mnt;
+                if(m[1] === "Abono_Pagado" || m[1] === "Gasto") saldoVal -= mnt;
+
+                // Lógica de Deudas y Calle
+                if(m[1] === "Deuda") deboVal += mnt;
+                if(m[1] === "Fiado") calleVal += mnt;
             });
-            document.getElementById('bal-bs').innerText = disp.toLocaleString() + " Bs";
-            document.getElementById('bal-usd').innerText = "≈ " + (disp / tasa).toFixed(2) + " $";
+
+            // Filtrar deudas para la lista (Pestaña 2)
+            store.entidades.slice(1).forEach(e => {
+                let saldoE = parseFloat(e[2]);
+                if(saldoE > 0 && e[1] === "Proveedor") {
+                    deudasHtml += `
+                    <div class="list-item" style="border-left-color:var(--rose)">
+                        <div>
+                            <b style="display:block">${e[0]}</b>
+                            <small style="color:#94a3b8">Desde: ${e[3] || 'Sin fecha'}</small>
+                        </div>
+                        <div style="text-align:right">
+                            <b style="color:var(--rose)">${saldoE.toLocaleString()} Bs</b>
+                            <div class="info-icon" onclick="alert('Estatus: Pendiente de pago')">i</div>
+                        </div>
+                    </div>`;
+                }
+            });
+
+            document.getElementById('total-bs').innerText = saldoVal.toLocaleString() + " Bs";
+            document.getElementById('total-usd').innerText = "≈ " + (saldoVal / store.tasa).toFixed(2) + " $";
+            document.getElementById('kpi-debo').innerText = deboVal.toLocaleString() + " Bs";
+            document.getElementById('kpi-calle').innerText = calleVal.toLocaleString() + " Bs";
+            document.getElementById('lista-deudas').innerHTML = deudasHtml || "<p style='text-align:center; color:#64748b'>No tienes deudas activas</p>";
         }
 
-        function openReg(tipo, concepto) {
-            tipoActual = tipo; conceptoActual = concepto;
-            document.getElementById('reg-title').innerText = concepto;
-            nav('v-reg', null);
+        function showForm(tipo, titulo) {
+            currentAction = tipo;
+            document.getElementById('m-titulo').innerText = titulo;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('touch-selector').style.display = 'none';
         }
 
-        function nav(id, btn) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(btn) {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
+        function openTouchSelector(tipo) {
+            currentAction = tipo;
+            document.getElementById('m-titulo').innerText = "Abonar a...";
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('touch-selector').style.display = 'block';
+            
+            let select = document.getElementById('f-persona-select');
+            select.innerHTML = "<option>Selecciona...</option>";
+            store.entidades.slice(1).forEach(e => {
+                if(parseFloat(e[2]) > 0) select.innerHTML += `<option value="${e[0]}">${e[0]} (${e[2]} Bs)</option>`;
+            });
         }
 
-        async function updateTasaManual() {
-            let n = prompt("Ingrese nueva Tasa BCV:", tasa);
+        async function setTasa() {
+            let n = prompt("Nueva Tasa BCV:", store.tasa);
             if(n) {
-                await fetch(API, {method:'POST', mode:'no-cors', body: JSON.stringify({accion:"UPDATE_TASA", nuevaTasa: parseFloat(n)})});
-                alert("Tasa Actualizada!");
+                await fetch(API, {method:'POST', mode:'no-cors', body: JSON.stringify({accion:"CAMBIAR_TASA", valor: parseFloat(n)})});
                 location.reload();
             }
         }
 
         async function enviar() {
+            const btn = document.querySelector('.btn-send');
+            btn.innerText = "PROCESANDO..."; btn.disabled = true;
+
             const payload = {
-                tipo: tipoActual,
-                beneficiario: document.getElementById('f-benef').value,
-                montoBs: parseFloat(document.getElementById('f-monto').value),
-                tasa: tasa,
-                referencia: document.getElementById('f-ref').value,
-                concepto: conceptoActual
+                accion: "REGISTRAR",
+                tipo: currentAction,
+                persona: document.getElementById('f-persona').value,
+                monto: parseFloat(document.getElementById('f-monto').value),
+                tasa: store.tasa,
+                ref: document.getElementById('f-ref').value,
+                fechaVence: document.getElementById('f-vence').value,
+                estatus: "Completado"
             };
+
             await fetch(API, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
             location.reload();
         }
 
+        function nav(id, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
         window.onload = init;
     </script>
 </body>
