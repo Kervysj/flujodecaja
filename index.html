@@ -24,6 +24,7 @@
         .nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1f2937; z-index: 100; }
         .nav-btn { background: none; border: none; color: var(--gray); font-family: 'Orbitron'; font-size: 0.7rem; font-weight: bold; }
         .nav-btn.active { color: var(--cyan); }
+        .btn-info { width: calc(100% - 30px); margin: 5px 15px; padding: 10px; border-radius: 10px; background: rgba(34, 211, 238, 0.1); border: 1px solid var(--cyan); color: var(--cyan); font-family: 'Orbitron'; font-size: 0.65rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -44,6 +45,10 @@
     
     <div class="section-title">Cuentas Pendientes (Deudas)</div>
     <div id="lista-pendientes-inicio"></div>
+
+    <div class="section-title">Auditoría Temporal</div>
+    <button class="btn-info" onclick="verAuditoria('Cliente')">🔍 VER CUÁNDO ME FIARON (CLIENTES)</button>
+    <button class="btn-info" onclick="verAuditoria('Proveedor')" style="border-color:var(--rose); color:var(--rose); background:rgba(244,63,94,0.1)">🔍 VER CUÁNDO QUEDÉ DEBIENDO (YO)</button>
 </div>
 
 <div id="v-hist" class="view">
@@ -65,7 +70,6 @@
             const r = await fetch(SCRIPT_URL);
             db = await r.json();
             
-            // --- MENSAJE PUSH AL CARGAR ---
             let confirmarTasaInicial = confirm(`¡Bienvenido Richard!\n\nLa tasa actual cargada es: ${db.tasa} Bs/$\n\n¿Deseas mantener esta tasa?`);
             if(!confirmarTasaInicial) {
                 let nuevaTasa = prompt("Introduce la tasa del día actualizada:", db.tasa);
@@ -73,13 +77,12 @@
                     db.tasa = parseFloat(nuevaTasa);
                 }
             }
-            // ------------------------------
 
             document.getElementById('tasa-val').innerText = db.tasa;
             render();
         } catch(e) { 
             console.error(e);
-            alert("Error de conexión. Revisa el internet.");
+            alert("Error de conexión.");
         }
     }
 
@@ -126,6 +129,33 @@
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
 
+    function verAuditoria(tipoFiltro) {
+        let reporte = `REPORTE DE TIEMPO (${tipoFiltro === 'Cliente' ? 'DEUDORES' : 'MIS DEUDAS'}):\n\n`;
+        let encontrados = false;
+
+        // Buscamos en los movimientos los que originaron la deuda (Fiado o Deuda)
+        db.movimientos.slice(1).forEach(m => {
+            let tipoMov = m[1];
+            let persona = m[2];
+            let monto = m[3];
+            let fechaHora = m[0];
+
+            // Si es Cliente y el tipo es Fiado
+            if(tipoFiltro === 'Cliente' && tipoMov === 'Fiado') {
+                reporte += `👤 ${persona}\n📅 ${fechaHora}\n💰 Monto: ${monto} Bs\n------------------\n`;
+                encontrados = true;
+            }
+            // Si es Proveedor y el tipo es Deuda
+            if(tipoFiltro === 'Proveedor' && tipoMov === 'Deuda') {
+                reporte += `📦 ${persona}\n📅 ${fechaHora}\n💰 Monto: ${monto} Bs\n------------------\n`;
+                encontrados = true;
+            }
+        });
+
+        if(!encontrados) reporte += "No hay registros detallados con hora en el historial.";
+        alert(reporte);
+    }
+
     function opcionesPersona(nom, sal, tipoOriginal) {
         let absSal = Math.abs(sal).toFixed(2);
         let textoAccion = (tipoOriginal === "Proveedor") ? "le debes" : "te debe";
@@ -157,7 +187,6 @@
         let monto = mntInput || prompt("Monto en Bs:");
         if(!monto) return;
 
-        // Validación de seguridad por operación
         let confirmarTasaOp = confirm(`Monto: ${monto} Bs\nTasa: ${db.tasa}\nEquivale a: ${(parseFloat(monto)/db.tasa).toFixed(2)} $\n\n¿Confirmar operación con esta tasa?`);
         if(!confirmarTasaOp) {
             let nuevaTasa = prompt("Ingresa la tasa correcta:", db.tasa);
