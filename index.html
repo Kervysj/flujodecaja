@@ -26,9 +26,9 @@
             line-height: 1.4;
         }
 
-        /* HEADER - Más limpio y legible */
+        /* HEADER */
         .header { 
-            padding: 25px 20px; 
+            padding: 20px; 
             background: #0f172a; 
             border-bottom: 1px solid #1e293b; 
             text-align: center; 
@@ -41,30 +41,45 @@
             align-items: center; 
             gap: 8px; 
             background: #1e293b; 
-            padding: 5px 15px; 
+            padding: 4px 12px; 
             border-radius: 8px; 
             font-family: 'Roboto Mono', monospace;
-            font-size: 0.85rem; 
+            font-size: 0.75rem; 
             color: var(--cyan);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border: 1px solid #334155;
         }
         .main-balance { 
             font-family: 'Roboto Mono', monospace; 
-            font-size: 2.4rem; 
+            font-size: 2.2rem; 
             font-weight: 800;
-            margin: 5px 0; 
-            letter-spacing: -1px;
+            margin: 0; 
             color: #fff;
         }
-        .sub-balance {
+        
+        /* Nuevos indicadores de deuda/cobro */
+        .info-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .info-box {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+        .info-box span {
+            display: block;
             font-family: 'Roboto Mono', monospace;
-            color: var(--cyan); 
-            font-size: 1.1rem;
-            font-weight: 400;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 4px;
         }
 
-        /* BOTONES - Mejor tacto visual */
+        /* BOTONES */
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
         .btn-touch { 
             background: var(--card); 
@@ -76,7 +91,6 @@
             font-size: 0.85rem; 
             font-weight: 700;
             color: #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .btn-touch:active { transform: translateY(2px); background: #1e293b; }
 
@@ -89,7 +103,7 @@
             letter-spacing: 1px;
         }
 
-        /* LISTAS - Contraste alto */
+        /* LISTAS */
         .list-item { 
             background: var(--card); 
             padding: 16px; 
@@ -113,7 +127,7 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* NAV - Fija y moderna */
+        /* NAV */
         .nav { 
             position: fixed; bottom: 0; width: 100%; 
             background: #0f172a; 
@@ -127,7 +141,6 @@
             color: var(--gray); 
             font-size: 0.75rem; 
             font-weight: 800;
-            text-transform: uppercase;
         }
         .nav-btn.active { color: var(--cyan); border-bottom: 2px solid var(--cyan); }
     </style>
@@ -137,7 +150,17 @@
 <div class="header">
     <div class="tasa-container">TASA HOY: <span id="tasa-val" style="color:#fff">0.00</span></div>
     <div id="bs-total" class="main-balance">0.00 Bs</div>
-    <div id="usd-total" class="sub-balance">≈ 0.00 $</div>
+    
+    <div class="info-bar">
+        <div class="info-box" style="border-bottom: 3px solid var(--amber)">
+            ME DEBEN (FIADOS)
+            <span id="info-me-deben" style="color: var(--amber)">0.00 Bs</span>
+        </div>
+        <div class="info-box" style="border-bottom: 3px solid var(--rose)">
+            YO DEBO (DEUDAS)
+            <span id="info-yo-debo" style="color: var(--rose)">0.00 Bs</span>
+        </div>
+    </div>
 </div>
 
 <div id="v-dash" class="view active">
@@ -148,12 +171,12 @@
         <div class="btn-touch" style="border-top: 3px solid var(--amber)" onclick="registrarNuevo('Fiado')">👤 FIADO</div>
     </div>
     
-    <div class="section-title">Cuentas Pendientes</div>
+    <div class="section-title">Cuentas Pendientes (Fiados y Deudas)</div>
     <div id="lista-pendientes-inicio"></div>
 </div>
 
 <div id="v-hist" class="view">
-    <div class="section-title" style="margin-top:15px">Historial Reciente</div>
+    <div class="section-title" style="margin-top:15px">Historial de Todos los Movimientos</div>
     <div id="lista-historial"></div>
 </div>
 
@@ -184,8 +207,11 @@
 
     function render() {
         let saldoBancario = parseFloat(db.saldoInicial) || 0;
+        let totalYoDebo = 0;
+        let totalMeDeben = 0;
         let pendHtml = "", histHtml = "";
 
+        // PROCESAR MOVIMIENTOS PARA HISTORIAL Y SALDO BANCARIO
         db.movimientos.slice(1).reverse().forEach(m => {
             let mBs = parseFloat(m[3]) || 0;
             let mTasa = parseFloat(m[4]) || db.tasa;
@@ -210,6 +236,7 @@
             </div>`;
         });
 
+        // PROCESAR ENTIDADES PARA DASHBOARD (PENDIENTES)
         db.entidades.slice(1).forEach(e => {
             let nombre = e[0];
             let saldoDolar = 0;
@@ -225,10 +252,14 @@
             });
 
             let absDolar = Math.abs(saldoDolar);
+            // Solo mostrar si tiene saldo pendiente y no son categorías de flujo (ENTRADA/GASTO)
             if(absDolar > 0.01 && !["ENTRADA", "GASTO"].includes(nombre.toUpperCase())) {
                 let montoHoy = absDolar * db.tasa;
                 let esYoDebo = e[1] === "Proveedor";
                 
+                if(esYoDebo) totalYoDebo += montoHoy;
+                else totalMeDeben += montoHoy;
+
                 pendHtml += `
                 <div class="list-item" onclick="opcionesPersona('${nombre}', ${absDolar}, ${montoHoy}, '${infoOriginal}', '${e[1]}')">
                     <div><b>${nombre}</b><br><small>${infoOriginal}</small></div>
@@ -240,12 +271,15 @@
             }
         });
 
+        // ACTUALIZAR INTERFAZ
         document.getElementById('bs-total').innerText = saldoBancario.toFixed(2) + " Bs";
-        document.getElementById('usd-total').innerText = "≈ " + (saldoBancario / db.tasa).toFixed(2) + " $";
-        document.getElementById('lista-pendientes-inicio').innerHTML = pendHtml || "<p style='padding:20px; color:var(--gray)'>Sin pendientes</p>";
+        document.getElementById('info-me-deben').innerText = totalMeDeben.toFixed(2) + " Bs";
+        document.getElementById('info-yo-debo').innerText = totalYoDebo.toFixed(2) + " Bs";
+        document.getElementById('lista-pendientes-inicio').innerHTML = pendHtml || "<p style='padding:20px; color:var(--gray)'>No hay deudas ni fiados activos</p>";
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
 
+    // ... (Mantener funciones opcionesPersona, registrarNuevo y nav igual que antes)
     function opcionesPersona(nom, dolares, bsHoy, infoOrig, tipoEnt) {
         let esProv = tipoEnt === "Proveedor";
         let msj = `RESUMEN: ${nom}\n${infoOrig}\nValor $: ${dolares.toFixed(2)}\n\nAL CAMBIO HOY (${db.tasa}):\nTOTAL: ${bsHoy.toFixed(2)} Bs\n\n1. ABONO\n2. PAGAR TODO\n3. SUMAR\nOpción:`;
@@ -281,7 +315,7 @@
         btn.classList.add('active');
     }
 
-    window.onload = init;
+    init();
 </script>
 </body>
 </html>
