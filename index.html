@@ -1,237 +1,124 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro - Richard Fix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <title>AdriSweets Pro</title>
     <style>
-        :root { 
-            --bg: #0b0f1a; --card: #161e2d; --cyan: #22d3ee; 
-            --rose: #ff4d6d; --amber: #fbbf24; --green: #2dd4bf; 
-            --gray: #94a3b8; --text-main: #f8fafc;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); 
-            margin: 0; padding-bottom: 90px; line-height: 1.4;
-        }
-
-        .header { 
-            padding: 20px; background: #0f172a; border-bottom: 1px solid #1e293b; 
-            text-align: center; position: sticky; top: 0; z-index: 100;
-        }
-        .tasa-container { 
-            display: inline-flex; align-items: center; gap: 8px; background: #1e293b; 
-            padding: 4px 12px; border-radius: 8px; font-family: 'Roboto Mono', monospace;
-            font-size: 0.75rem; color: var(--cyan); margin-bottom: 10px; border: 1px solid #334155;
-        }
-        .main-balance { font-family: 'Roboto Mono', monospace; font-size: 2.2rem; font-weight: 800; margin: 0; color: #fff; }
-        
-        .info-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .info-box { background: #1e293b; padding: 10px; border-radius: 10px; font-size: 0.65rem; text-align: center; }
-        .info-box span { display: block; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; font-weight: 700; margin-top: 2px; }
-
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
-        .btn-touch { 
-            background: var(--card); padding: 18px 10px; border-radius: 16px; 
-            border: 1px solid #2d3748; text-align: center; cursor: pointer; 
-            font-size: 0.85rem; font-weight: 700; color: #e2e8f0;
-        }
-        .btn-touch:active { transform: scale(0.95); background: #1e293b; }
-
-        .section-title { 
-            font-size: 0.75rem; font-weight: 800; color: var(--gray); 
-            padding: 10px 20px; text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        .list-item { 
-            background: var(--card); padding: 16px; border-radius: 14px; 
-            margin: 0 15px 12px 15px; display: flex; justify-content: space-between; 
-            align-items: center; border: 1px solid #1e293b;
-        }
-        .list-item b { font-size: 1rem; color: #fff; }
-        .list-item .amount-text { font-family: 'Roboto Mono', monospace; font-size: 1.05rem; font-weight: 700; text-align: right; }
-
-        .view { display: none; }
-        .view.active { display: block; }
-
-        .nav { 
-            position: fixed; bottom: 0; width: 100%; background: #0f172a; 
-            display: flex; justify-content: space-around; padding: 15px 0; 
-            border-top: 1px solid #1e293b; z-index: 100; 
-        }
-        .nav-btn { background: none; border: none; color: var(--gray); font-size: 0.75rem; font-weight: 800; }
-        .nav-btn.active { color: var(--cyan); border-bottom: 2px solid var(--cyan); }
+        :root { --bg: #0b0f1a; --card: #161e2d; --cyan: #22d3ee; --rose: #ff4d6d; --amber: #fbbf24; --green: #2dd4bf; --text: #f8fafc; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
+        .header { padding: 20px; background: #0f172a; text-align: center; border-bottom: 1px solid #1e293b; }
+        .tasa-tag { background: #1e293b; color: var(--cyan); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; display: inline-block; }
+        .balance { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; }
+        .info-card { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; font-size: 0.7rem; border-bottom: 3px solid transparent; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
+        .btn { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; font-weight: bold; border: 1px solid #2d3748; cursor: pointer; }
+        .list-item { background: var(--card); margin: 10px 15px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid transparent; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="tasa-container">TASA: <span id="tasa-val" style="color:#fff">0.00</span></div>
-    <div id="bs-total" class="main-balance">0.00 Bs</div>
-    
-    <div class="info-bar">
-        <div class="info-box" style="border-bottom: 3px solid var(--amber)">
-            ME DEBEN
-            <span id="info-me-deben" style="color: var(--amber)">0.00 Bs</span>
-        </div>
-        <div class="info-box" style="border-bottom: 3px solid var(--rose)">
-            YO DEBO
-            <span id="info-yo-debo" style="color: var(--rose)">0.00 Bs</span>
-        </div>
+    <div class="tasa-tag" onclick="actualizarTasa()">TASA HOY: <span id="tasa-val">0.00</span></div>
+    <div class="balance" id="saldo-bs">0.00 Bs</div>
+    <div class="info-grid">
+        <div class="info-card" style="border-color: var(--amber)">ME DEBEN<br><span id="me-deben" style="color:var(--amber); font-size:1.1rem">0.00</span></div>
+        <div class="info-card" style="border-color: var(--rose)">YO DEBO<br><span id="yo-debo" style="color:var(--rose); font-size:1.1rem">0.00</span></div>
     </div>
 </div>
 
-<div id="v-dash" class="view active">
-    <div class="action-grid">
-        <div class="btn-touch" style="border-top: 3px solid var(--green)" onclick="registrarNuevo('Venta')">💰 VENTA</div>
-        <div class="btn-touch" style="border-top: 3px solid var(--rose)" onclick="registrarNuevo('Gasto')">📤 GASTO</div>
-        <div class="btn-touch" style="border-top: 3px solid var(--rose)" onclick="registrarNuevo('Deuda')">📦 DEUDA</div>
-        <div class="btn-touch" style="border-top: 3px solid var(--amber)" onclick="registrarNuevo('Fiado')">👤 FIADO</div>
+<div id="v-dash">
+    <div class="btn-grid">
+        <div class="btn" style="color:var(--green)" onclick="nuevo('Venta')">VENTA</div>
+        <div class="btn" style="color:var(--rose)" onclick="nuevo('Gasto')">GASTO</div>
+        <div class="btn" style="color:var(--rose)" onclick="nuevo('Deuda')">DEUDA</div>
+        <div class="btn" style="color:var(--amber)" onclick="nuevo('Fiado')">FIADO</div>
     </div>
-    <div class="section-title">Cuentas por Cobrar / Pagar</div>
-    <div id="lista-pendientes-inicio"></div>
+    <div id="lista-deudas"></div>
 </div>
-
-<div id="v-hist" class="view">
-    <div class="section-title" style="margin-top:15px">Historial de Movimientos</div>
-    <div id="lista-historial"></div>
-</div>
-
-<nav class="nav">
-    <button class="nav-btn active" onclick="nav('v-dash', this)">DASHBOARD</button>
-    <button class="nav-btn" onclick="nav('v-hist', this)">HISTORIAL</button>
-</nav>
 
 <script>
-    // URL ACTUALIZADA
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGfMQofyp_IR_snqo7q8goWHMQGLIvceBcFuKfV0oJ3_5flieg91VbnjDyT6SydS84/exec";
-    let db = {};
+    const URL = "TU_URL_DE_SCRIPT";
+    let datos = {};
 
-    async function init() {
-        try {
-            const r = await fetch(SCRIPT_URL);
-            db = await r.json();
-            document.getElementById('tasa-val').innerText = db.tasa.toFixed(2);
-            render();
-        } catch(e) { alert("Error de conexión"); }
+    async function cargar() {
+        const r = await fetch(URL);
+        datos = await r.json();
+        document.getElementById('tasa-val').innerText = datos.tasa;
+        render();
     }
 
     function render() {
-        let saldoBancario = parseFloat(db.saldoInicial) || 0;
-        let tYoDebo = 0, tMeDeben = 0;
-        let pendHtml = "", histHtml = "";
+        let saldo = parseFloat(datos.saldoInicial);
+        let debeBs = 0, debenBs = 0;
+        let htmlDeudas = "";
 
-        // PROCESAR MOVIMIENTOS PARA HISTORIAL
-        db.movimientos.slice(1).reverse().forEach(m => {
-            let fecha = m[0].split('T')[0];
-            let tipo = m[1];
-            let persona = m[2];
-            let montoBs = parseFloat(m[3]) || 0;
-            let desc = m[5] || "Sin descripción";
-
-            if(["Venta", "Abono_Cobrado"].includes(tipo)) saldoBancario += montoBs;
-            if(["Gasto", "Abono_Pagado"].includes(tipo)) saldoBancario -= montoBs;
-
-            let color = ["Deuda", "Gasto", "Abono_Pagado"].includes(tipo) ? 'var(--rose)' : 'var(--green)';
-            if(tipo === "Fiado") color = 'var(--amber)';
-
-            histHtml += `
-            <div class="list-item" style="border-right: 4px solid ${color}" onclick="alert('DETALLE:\\n${desc}')">
-                <div style="flex:1;">
-                    <b>${persona}</b><br><small>${fecha} | ${tipo}</small>
-                </div>
-                <div class="amount-text" style="color:${color}">
-                    ${montoBs.toFixed(2)} Bs
-                </div>
-            </div>`;
+        // Calculamos saldos por persona
+        let saldos = {};
+        datos.movimientos.slice(1).forEach(m => {
+            let persona = m[2], tipo = m[1], monto = parseFloat(m[3]);
+            if (!saldos[persona]) saldos[persona] = 0;
+            
+            if (["Fiado", "Venta", "Abono_Pagado"].includes(tipo)) saldos[persona] += monto;
+            else if (["Deuda", "Gasto", "Abono_Cobrado"].includes(tipo)) saldos[persona] -= monto;
+            
+            if (["Venta", "Abono_Cobrado"].includes(tipo)) saldo += monto;
+            if (["Gasto", "Abono_Pagado"].includes(tipo)) saldo -= monto;
         });
 
-        // PROCESAR PENDIENTES (SOLO FIADO Y DEUDA)
-        db.entidades.slice(1).forEach(e => {
-            let nombre = e[0];
-            let saldoDolar = 0;
-            let detalleAcumulado = "";
-
-            db.movimientos.slice(1).forEach(m => {
-                if(m[2] === nombre) {
-                    let mD = parseFloat(m[3]) / (parseFloat(m[4]) || db.tasa);
-                    if(["Fiado", "Abono_Pagado", "Venta"].includes(m[1])) saldoDolar += mD;
-                    else saldoDolar -= mD;
-                    if(m[5]) detalleAcumulado += `- ${m[5]}\\n`;
-                }
-            });
-
-            let absDolar = Math.abs(saldoDolar);
-            if(absDolar > 0.01 && !["ENTRADA", "GASTO"].includes(nombre.toUpperCase())) {
-                let montoHoy = absDolar * db.tasa;
-                let esYoDebo = e[1] === "Proveedor";
-                if(esYoDebo) tYoDebo += montoHoy; else tMeDeben += montoHoy;
-
-                pendHtml += `
-                <div class="list-item" onclick="opcionesPersona('${nombre}', ${absDolar}, ${montoHoy}, '${detalleAcumulado}', '${e[1]}')">
-                    <div><b>${nombre}</b><br><small>${esYoDebo?'Debo':'Me deben'}</small></div>
-                    <div class="amount-text" style="color:${esYoDebo?'var(--rose)':'var(--amber)'}">
-                        ${montoHoy.toFixed(2)} Bs<br>
-                        <small style="color:var(--cyan)">$${absDolar.toFixed(2)}</small>
+        Object.keys(saldos).forEach(p => {
+            let s = saldos[p];
+            if (Math.abs(s) > 1) {
+                let esDeuda = s < 0; // Yo debo
+                if (esDeuda) debeBs += Math.abs(s); else debenBs += s;
+                
+                htmlDeudas += `
+                <div class="list-item" style="border-color: ${esDeuda ? 'var(--rose)' : 'var(--amber)'}" onclick="gestionar('${p}', ${Math.abs(s)}, ${esDeuda})">
+                    <div><b>${p}</b><br><small>${esDeuda ? 'YO DEBO' : 'ME DEBEN'}</small></div>
+                    <div style="text-align:right">
+                        <b>${Math.abs(s).toFixed(2)} Bs</b><br>
+                        <small style="color:var(--cyan)">$${(Math.abs(s)/datos.tasa).toFixed(2)}</small>
                     </div>
                 </div>`;
             }
         });
 
-        document.getElementById('bs-total').innerText = saldoBancario.toFixed(2) + " Bs";
-        document.getElementById('info-me-deben').innerText = tMeDeben.toFixed(2) + " Bs";
-        document.getElementById('info-yo-debo').innerText = tYoDebo.toFixed(2) + " Bs";
-        document.getElementById('lista-pendientes-inicio').innerHTML = pendHtml || "<p style='padding:20px; color:var(--gray)'>Sin cuentas pendientes</p>";
-        document.getElementById('lista-historial').innerHTML = histHtml;
+        document.getElementById('saldo-bs').innerText = saldo.toFixed(2) + " Bs";
+        document.getElementById('me-deben').innerText = debenBs.toFixed(2) + " Bs";
+        document.getElementById('yo-debo').innerText = debeBs.toFixed(2) + " Bs";
+        document.getElementById('lista-deudas').innerHTML = htmlDeudas;
     }
 
-    async function registrarNuevo(tipo, nom, mnt) {
-        let persona = nom || prompt("Nombre:"); if(!persona) return;
-        let monto = mnt || prompt("Monto Bs:"); if(!monto) return;
-        let descripcion = prompt("Descripción / Leyenda:");
-        
-        document.body.style.opacity="0.4";
-        try {
-            await fetch(SCRIPT_URL, {
-                method:'POST',
-                mode:'no-cors',
-                body: JSON.stringify({
-                    accion: "REGISTRAR",
-                    tipo: tipo,
-                    persona: persona.toUpperCase(),
-                    monto: parseFloat(monto),
-                    tasa: db.tasa,
-                    descripcion: descripcion || "Registro App"
-                })
-            });
-            setTimeout(() => { location.reload(); }, 600);
-        } catch(e) { alert("Error"); document.body.style.opacity="1"; }
-    }
-
-    function opcionesPersona(nom, dol, bs, det, tipo) {
-        let msj = `${nom}\\n\\nLEYENDA ACUMULADA:\\n${det || 'Sin detalles'}\\n\\n1. Abono\\n2. Liquidar todo\\n3. Sumar deuda`;
-        let opc = prompt(msj, "1");
-        if(opc === "1") {
-            let m = prompt("Monto Abono Bs:");
-            if(m) registrarNuevo(tipo === "Proveedor" ? "Abono_Pagado" : "Abono_Cobrado", nom, m);
-        } else if(opc === "2") {
-            registrarNuevo(tipo === "Proveedor" ? "Abono_Pagado" : "Abono_Cobrado", nom, bs.toFixed(2));
-        } else if(opc === "3") {
-            let m = prompt("Monto a sumar Bs:");
-            if(m) registrarNuevo(tipo === "Proveedor" ? "Deuda" : "Fiado", nom, m);
+    function gestionar(nombre, monto, esDeuda) {
+        let op = prompt(`${nombre} (${monto.toFixed(2)} Bs)\n1. ABONAR\n2. PAGAR TODO\n3. SUMAR MÁS`, "1");
+        if (op == "1") {
+            let a = prompt("Monto del abono:");
+            if (a) enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, a);
+        } else if (op == "2") {
+            enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, monto);
+        } else if (op == "3") {
+            let s = prompt("Monto a sumar:");
+            if (s) enviar(esDeuda ? "Deuda" : "Fiado", nombre, s);
         }
     }
 
-    function nav(id, btn) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    async function enviar(tipo, persona, monto) {
+        let desc = prompt("Descripción:", "Touch App");
+        await fetch(URL, {
+            method: 'POST',
+            body: JSON.stringify({ tipo, persona, monto, tasa: datos.tasa, descripcion: desc })
+        });
+        location.reload();
     }
 
-    init();
+    function nuevo(tipo) {
+        let p = prompt("Nombre:");
+        let m = prompt("Monto Bs:");
+        if (p && m) enviar(tipo, p, m);
+    }
+
+    cargar();
 </script>
 </body>
 </html>
