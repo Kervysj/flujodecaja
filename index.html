@@ -56,8 +56,14 @@
             margin: 0; 
             color: #fff;
         }
+        .sub-balance {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--cyan); 
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
         
-        /* Nuevos indicadores de deuda/cobro */
+        /* Indicadores de deuda/cobro */
         .info-bar {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -68,7 +74,7 @@
             background: #1e293b;
             padding: 10px;
             border-radius: 10px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-align: center;
         }
         .info-box span {
@@ -76,7 +82,13 @@
             font-family: 'Roboto Mono', monospace;
             font-size: 0.9rem;
             font-weight: 700;
-            margin-top: 4px;
+            margin-top: 2px;
+        }
+        .info-box small {
+            display: block;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            opacity: 0.8;
         }
 
         /* BOTONES */
@@ -150,15 +162,18 @@
 <div class="header">
     <div class="tasa-container">TASA HOY: <span id="tasa-val" style="color:#fff">0.00</span></div>
     <div id="bs-total" class="main-balance">0.00 Bs</div>
+    <div id="usd-total" class="sub-balance">≈ 0.00 $</div>
     
     <div class="info-bar">
         <div class="info-box" style="border-bottom: 3px solid var(--amber)">
             ME DEBEN (FIADOS)
             <span id="info-me-deben" style="color: var(--amber)">0.00 Bs</span>
+            <small id="info-me-deben-usd" style="color: var(--cyan)">0.00 $</small>
         </div>
         <div class="info-box" style="border-bottom: 3px solid var(--rose)">
             YO DEBO (DEUDAS)
             <span id="info-yo-debo" style="color: var(--rose)">0.00 Bs</span>
+            <small id="info-yo-debo-usd" style="color: var(--cyan)">0.00 $</small>
         </div>
     </div>
 </div>
@@ -207,8 +222,8 @@
 
     function render() {
         let saldoBancario = parseFloat(db.saldoInicial) || 0;
-        let totalYoDebo = 0;
-        let totalMeDeben = 0;
+        let totalYoDeboUSD = 0;
+        let totalMeDebenUSD = 0;
         let pendHtml = "", histHtml = "";
 
         // PROCESAR MOVIMIENTOS PARA HISTORIAL Y SALDO BANCARIO
@@ -252,13 +267,12 @@
             });
 
             let absDolar = Math.abs(saldoDolar);
-            // Solo mostrar si tiene saldo pendiente y no son categorías de flujo (ENTRADA/GASTO)
             if(absDolar > 0.01 && !["ENTRADA", "GASTO"].includes(nombre.toUpperCase())) {
                 let montoHoy = absDolar * db.tasa;
                 let esYoDebo = e[1] === "Proveedor";
                 
-                if(esYoDebo) totalYoDebo += montoHoy;
-                else totalMeDeben += montoHoy;
+                if(esYoDebo) totalYoDeboUSD += absDolar;
+                else totalMeDebenUSD += absDolar;
 
                 pendHtml += `
                 <div class="list-item" onclick="opcionesPersona('${nombre}', ${absDolar}, ${montoHoy}, '${infoOriginal}', '${e[1]}')">
@@ -273,13 +287,19 @@
 
         // ACTUALIZAR INTERFAZ
         document.getElementById('bs-total').innerText = saldoBancario.toFixed(2) + " Bs";
-        document.getElementById('info-me-deben').innerText = totalMeDeben.toFixed(2) + " Bs";
-        document.getElementById('info-yo-debo').innerText = totalYoDebo.toFixed(2) + " Bs";
+        document.getElementById('usd-total').innerText = "≈ " + (saldoBancario / db.tasa).toFixed(2) + " $";
+        
+        // Cajas informativas con Bs y $
+        document.getElementById('info-me-deben').innerText = (totalMeDebenUSD * db.tasa).toFixed(2) + " Bs";
+        document.getElementById('info-me-deben-usd').innerText = totalMeDebenUSD.toFixed(2) + " $";
+        
+        document.getElementById('info-yo-debo').innerText = (totalYoDeboUSD * db.tasa).toFixed(2) + " Bs";
+        document.getElementById('info-yo-debo-usd').innerText = totalYoDeboUSD.toFixed(2) + " $";
+
         document.getElementById('lista-pendientes-inicio').innerHTML = pendHtml || "<p style='padding:20px; color:var(--gray)'>No hay deudas ni fiados activos</p>";
         document.getElementById('lista-historial').innerHTML = histHtml;
     }
 
-    // ... (Mantener funciones opcionesPersona, registrarNuevo y nav igual que antes)
     function opcionesPersona(nom, dolares, bsHoy, infoOrig, tipoEnt) {
         let esProv = tipoEnt === "Proveedor";
         let msj = `RESUMEN: ${nom}\n${infoOrig}\nValor $: ${dolares.toFixed(2)}\n\nAL CAMBIO HOY (${db.tasa}):\nTOTAL: ${bsHoy.toFixed(2)} Bs\n\n1. ABONO\n2. PAGAR TODO\n3. SUMAR\nOpción:`;
