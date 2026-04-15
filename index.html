@@ -8,23 +8,28 @@
         :root { --bg: #0b0f1a; --card: #161e2d; --cyan: #22d3ee; --rose: #ff4d6d; --amber: #fbbf24; --green: #2dd4bf; --text: #f8fafc; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
         .header { padding: 20px; background: #0f172a; text-align: center; border-bottom: 1px solid #1e293b; }
-        .tasa-tag { background: #1e293b; color: var(--cyan); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; display: inline-block; }
+        .tasa-tag { background: #1e293b; color: var(--cyan); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; display: inline-block; cursor: pointer; }
         .balance { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; }
         .info-card { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; font-size: 0.7rem; border-bottom: 3px solid transparent; }
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
         .btn { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; font-weight: bold; border: 1px solid #2d3748; cursor: pointer; }
-        .list-item { background: var(--card); margin: 10px 15px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid transparent; }
+        .btn:active { transform: scale(0.95); background: #1e293b; }
+        .list-item { background: var(--card); margin: 10px 15px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid transparent; cursor: pointer; }
+        .list-item:active { background: #1e293b; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,15,26,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
+<div id="loading">Cargando...</div>
+
 <div class="header">
-    <div class="tasa-tag" onclick="actualizarTasa()">TASA HOY: <span id="tasa-val">0.00</span></div>
+    <div class="tasa-tag">TASA HOY: <span id="tasa-val">0.00</span></div>
     <div class="balance" id="saldo-bs">0.00 Bs</div>
     <div class="info-grid">
-        <div class="info-card" style="border-color: var(--amber)">ME DEBEN<br><span id="me-deben" style="color:var(--amber); font-size:1.1rem">0.00</span></div>
-        <div class="info-card" style="border-color: var(--rose)">YO DEBO<br><span id="yo-debo" style="color:var(--rose); font-size:1.1rem">0.00</span></div>
+        <div class="info-card" style="border-color: var(--amber)">ME DEBEN<br><span id="me-deben" style="color:var(--amber); font-size:1.1rem">0.00 Bs</span></div>
+        <div class="info-card" style="border-color: var(--rose)">YO DEBO<br><span id="yo-debo" style="color:var(--rose); font-size:1.1rem">0.00 Bs</span></div>
     </div>
 </div>
 
@@ -35,87 +40,119 @@
         <div class="btn" style="color:var(--rose)" onclick="nuevo('Deuda')">DEUDA</div>
         <div class="btn" style="color:var(--amber)" onclick="nuevo('Fiado')">FIADO</div>
     </div>
+    <div style="padding: 10px 20px; font-size: 0.8rem; color: #94a3b8; font-weight: bold;">CONTROL DE COBROS Y PAGOS</div>
     <div id="lista-deudas"></div>
 </div>
 
 <script>
-    const URL = "TU_URL_DE_SCRIPT";
+    // URL ACTUALIZADA
+    const URL = "https://script.google.com/macros/s/AKfycbxENFCGRyIUjVn2woGebJIbrWxX00HSMSfF0Sc-L112oAH0QuQpx49kMdBecHtVXTPx/exec";
     let datos = {};
 
     async function cargar() {
-        const r = await fetch(URL);
-        datos = await r.json();
-        document.getElementById('tasa-val').innerText = datos.tasa;
-        render();
+        document.getElementById('loading').style.display = 'flex';
+        try {
+            const r = await fetch(URL);
+            datos = await r.json();
+            document.getElementById('tasa-val').innerText = datos.tasa.toFixed(2);
+            render();
+        } catch(e) {
+            alert("Error al cargar datos");
+        }
+        document.getElementById('loading').style.display = 'none';
     }
 
     function render() {
-        let saldo = parseFloat(datos.saldoInicial);
-        let debeBs = 0, debenBs = 0;
+        let saldoBancario = parseFloat(datos.saldoInicial) || 0;
+        let tYoDebo = 0, tMeDeben = 0;
         let htmlDeudas = "";
+        let saldosPorPersona = {};
 
-        // Calculamos saldos por persona
-        let saldos = {};
+        // 1. Calcular saldos netos por cada persona en los movimientos
         datos.movimientos.slice(1).forEach(m => {
-            let persona = m[2], tipo = m[1], monto = parseFloat(m[3]);
-            if (!saldos[persona]) saldos[persona] = 0;
-            
-            if (["Fiado", "Venta", "Abono_Pagado"].includes(tipo)) saldos[persona] += monto;
-            else if (["Deuda", "Gasto", "Abono_Cobrado"].includes(tipo)) saldos[persona] -= monto;
-            
-            if (["Venta", "Abono_Cobrado"].includes(tipo)) saldo += monto;
-            if (["Gasto", "Abono_Pagado"].includes(tipo)) saldo -= monto;
+            let tipo = m[1];
+            let persona = m[2];
+            let montoBs = parseFloat(m[3]) || 0;
+
+            if (!saldosPorPersona[persona]) saldosPorPersona[persona] = 0;
+
+            // Lógica de Saldo Principal
+            if (["Venta", "Abono_Cobrado"].includes(tipo)) saldoBancario += montoBs;
+            if (["Gasto", "Abono_Pagado"].includes(tipo)) saldoBancario -= montoBs;
+
+            // Lógica de Deudas Individuales
+            if (["Fiado", "Venta", "Abono_Pagado"].includes(tipo)) saldosPorPersona[persona] += montoBs;
+            if (["Deuda", "Gasto", "Abono_Cobrado"].includes(tipo)) saldosPorPersona[persona] -= montoBs;
         });
 
-        Object.keys(saldos).forEach(p => {
-            let s = saldos[p];
-            if (Math.abs(s) > 1) {
-                let esDeuda = s < 0; // Yo debo
-                if (esDeuda) debeBs += Math.abs(s); else debenBs += s;
+        // 2. Generar lista de deudas (ignorar saldos cercanos a cero)
+        Object.keys(saldosPorPersona).forEach(p => {
+            let saldoPersona = saldosPorPersona[p];
+            if (Math.abs(saldoPersona) > 0.1 && !["GASTO", "VENTA"].includes(p.toUpperCase())) {
+                let esYoDebo = saldoPersona < 0;
+                let montoAbs = Math.abs(saldoPersona);
                 
+                if (esYoDebo) tYoDebo += montoAbs; else tMeDeben += montoAbs;
+
                 htmlDeudas += `
-                <div class="list-item" style="border-color: ${esDeuda ? 'var(--rose)' : 'var(--amber)'}" onclick="gestionar('${p}', ${Math.abs(s)}, ${esDeuda})">
-                    <div><b>${p}</b><br><small>${esDeuda ? 'YO DEBO' : 'ME DEBEN'}</small></div>
+                <div class="list-item" style="border-color: ${esYoDebo ? 'var(--rose)' : 'var(--amber)'}" onclick="gestionar('${p}', ${montoAbs}, ${esYoDebo})">
+                    <div><b>${p}</b><br><small>${esYoDebo ? 'Deuda Pendiente' : 'Fiado Pendiente'}</small></div>
                     <div style="text-align:right">
-                        <b>${Math.abs(s).toFixed(2)} Bs</b><br>
-                        <small style="color:var(--cyan)">$${(Math.abs(s)/datos.tasa).toFixed(2)}</small>
+                        <b style="color: ${esYoDebo ? 'var(--rose)' : 'var(--amber)'}">${montoAbs.toFixed(2)} Bs</b><br>
+                        <small style="color:var(--cyan)">$${(montoAbs/datos.tasa).toFixed(2)}</small>
                     </div>
                 </div>`;
             }
         });
 
-        document.getElementById('saldo-bs').innerText = saldo.toFixed(2) + " Bs";
-        document.getElementById('me-deben').innerText = debenBs.toFixed(2) + " Bs";
-        document.getElementById('yo-debo').innerText = debeBs.toFixed(2) + " Bs";
-        document.getElementById('lista-deudas').innerHTML = htmlDeudas;
+        document.getElementById('saldo-bs').innerText = saldoBancario.toFixed(2) + " Bs";
+        document.getElementById('me-deben').innerText = tMeDeben.toFixed(2) + " Bs";
+        document.getElementById('yo-debo').innerText = tYoDebo.toFixed(2) + " Bs";
+        document.getElementById('lista-deudas').innerHTML = htmlDeudas || "<p style='text-align:center; color:gray'>Sin cuentas pendientes</p>";
     }
 
     function gestionar(nombre, monto, esDeuda) {
-        let op = prompt(`${nombre} (${monto.toFixed(2)} Bs)\n1. ABONAR\n2. PAGAR TODO\n3. SUMAR MÁS`, "1");
+        let op = prompt(`${nombre} (${monto.toFixed(2)} Bs)\n\n1. REGISTRAR ABONO\n2. LIQUIDAR TOTAL\n3. SUMAR A LA CUENTA`, "1");
         if (op == "1") {
-            let a = prompt("Monto del abono:");
+            let a = prompt("Monto del abono en Bs:");
             if (a) enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, a);
         } else if (op == "2") {
-            enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, monto);
+            if(confirm(`¿Confirmas el pago total de ${monto.toFixed(2)} Bs?`)) {
+                enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, monto);
+            }
         } else if (op == "3") {
-            let s = prompt("Monto a sumar:");
+            let s = prompt("Monto a sumar en Bs:");
             if (s) enviar(esDeuda ? "Deuda" : "Fiado", nombre, s);
         }
     }
 
     async function enviar(tipo, persona, monto) {
-        let desc = prompt("Descripción:", "Touch App");
-        await fetch(URL, {
-            method: 'POST',
-            body: JSON.stringify({ tipo, persona, monto, tasa: datos.tasa, descripcion: desc })
-        });
-        location.reload();
+        let desc = prompt("Descripción / Concepto:", "Registro Touch");
+        document.getElementById('loading').style.display = 'flex';
+        try {
+            await fetch(URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ 
+                    tipo: tipo, 
+                    persona: persona.toUpperCase(), 
+                    monto: parseFloat(monto), 
+                    tasa: datos.tasa, 
+                    descripcion: desc 
+                })
+            });
+            setTimeout(() => { location.reload(); }, 800);
+        } catch(e) {
+            alert("Error al enviar");
+            document.getElementById('loading').style.display = 'none';
+        }
     }
 
     function nuevo(tipo) {
         let p = prompt("Nombre:");
-        let m = prompt("Monto Bs:");
-        if (p && m) enviar(tipo, p, m);
+        if (!p) return;
+        let m = prompt("Monto en Bs:");
+        if (m) enviar(tipo, p, m);
     }
 
     cargar();
