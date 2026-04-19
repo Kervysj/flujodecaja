@@ -1,161 +1,339 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdriSweets Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>DebtControl Premium</title>
+
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkRlYnRDb250cm9sIFByZW1pdW0iLAogICJzaG9ydF9uYW1lIjogIkRlYnRDdXVkZXMiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGEwYSIsCiAgInRoZW1lX2NvbG9yIjogIzAwZDFmZiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI3MjIvMjcyMjU2NC5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+
     <style>
-        :root { --bg: #0b0f1a; --card: #161e2d; --cyan: #22d3ee; --rose: #ff4d6d; --amber: #fbbf24; --green: #2dd4bf; --text: #f8fafc; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
-        .header { padding: 20px; background: #0f172a; text-align: center; border-bottom: 1px solid #1e293b; }
-        .tasa-tag { background: #1e293b; color: var(--cyan); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; display: inline-block; cursor: pointer; }
-        .balance { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; }
-        .info-card { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; font-size: 0.7rem; border-bottom: 3px solid transparent; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
-        .btn { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; font-weight: bold; border: 1px solid #2d3748; cursor: pointer; }
-        .btn:active { transform: scale(0.95); background: #1e293b; }
-        .list-item { background: var(--card); margin: 10px 15px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid transparent; cursor: pointer; }
-        .list-item:active { background: #1e293b; }
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,15,26,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        :root {
+            --bg: #0a0a0a;
+            --card: #161616;
+            --accent: #00d1ff;
+            --text: #e0e0e0;
+            --danger: #ff4d4d;
+            --success: #00ff88;
+            --border: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px 20px 100px 20px;
+        }
+
+        .container { max-width: 500px; margin: auto; }
+        h2 { color: var(--accent); text-align: center; letter-spacing: 2px; text-transform: uppercase; font-weight: 300; margin-bottom: 25px; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+        }
+
+        .acordeon-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(0, 209, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 8px 0;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px; /* Evita zoom automático en iPhone */
+        }
+
+        label { font-size: 11px; color: var(--accent); margin-left: 5px; text-transform: uppercase; font-weight: bold; }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            border: none;
+            color: black;
+            font-weight: bold;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .portion-item {
+            background: #1f1f1f;
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-check {
+            background: var(--success);
+            width: 70px;
+            padding: 12px;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #0f0f0f;
+            display: flex;
+            border-top: 1px solid var(--border);
+            padding: 12px 0;
+            z-index: 1000;
+        }
+
+        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #666; }
+        .nav-item.active { color: var(--accent); font-weight: bold; }
+        .hidden { display: none; }
+
+        .hist-content {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #444;
+            font-size: 14px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
 
-<div id="loading">Cargando...</div>
+<div class="container">
+    <h2 id="app-title">PRODUCCIÓN</h2>
+    
+    <div id="view-nueva" class="view">
+        <div class="card">
+            <h3 style="margin:0 0 20px 0; font-weight: 300; text-align: center; color: var(--text);">Nueva Producción</h3>
+            
+            <label>Nombre del Producto</label>
+            <input type="text" id="prod-nombre" placeholder="Ej: PIE DE PARCHITA">
+            
+            <div style="display:flex; gap:10px">
+                <div style="flex:1">
+                    <label>Porciones</label>
+                    <input type="number" id="prod-cant" placeholder="12">
+                </div>
+                <div style="flex:1">
+                    <label>Precio Unitario ($)</label>
+                    <input type="number" id="prod-precio" placeholder="2.0">
+                </div>
+            </div>
 
-<div class="header">
-    <div class="tasa-tag">TASA HOY: <span id="tasa-val">0.00</span></div>
-    <div class="balance" id="saldo-bs">0.00 Bs</div>
-    <div class="info-grid">
-        <div class="info-card" style="border-color: var(--amber)">ME DEBEN<br><span id="me-deben" style="color:var(--amber); font-size:1.1rem">0.00 Bs</span></div>
-        <div class="info-card" style="border-color: var(--rose)">YO DEBO<br><span id="yo-debo" style="color:var(--rose); font-size:1.1rem">0.00 Bs</span></div>
+            <label>Fecha de Realización</label>
+            <input type="date" id="prod-fecha-manual">
+            
+            <button onclick="crearLote()">REGISTRAR LOTE</button>
+        </div>
+    </div>
+
+    <div id="view-pendientes" class="view hidden">
+        <div id="lista-pendientes"></div>
+    </div>
+
+    <div id="view-historial" class="view hidden">
+        <button id="btn-borrar-hist" class="hidden" style="background: var(--danger); margin-bottom:20px;" onclick="borrarHistorial()">BORRAR HISTORIAL DEFINITIVO</button>
+        <div id="lista-historial"></div>
     </div>
 </div>
 
-<div id="v-dash">
-    <div class="btn-grid">
-        <div class="btn" style="color:var(--green)" onclick="nuevo('Venta')">VENTA</div>
-        <div class="btn" style="color:var(--rose)" onclick="nuevo('Gasto')">GASTO</div>
-        <div class="btn" style="color:var(--rose)" onclick="nuevo('Deuda')">DEUDA</div>
-        <div class="btn" style="color:var(--amber)" onclick="nuevo('Fiado')">FIADO</div>
-    </div>
-    <div style="padding: 10px 20px; font-size: 0.8rem; color: #94a3b8; font-weight: bold;">CONTROL DE COBROS Y PAGOS</div>
-    <div id="lista-deudas"></div>
+<div class="nav-bar">
+    <div class="nav-item active" onclick="changeView('nueva', this)"><span>➕</span><br>Nuevo</div>
+    <div class="nav-item" onclick="changeView('pendientes', this)"><span>⏳</span><br>Cobros</div>
+    <div class="nav-item" onclick="changeView('historial', this)"><span>📜</span><br>Historial</div>
 </div>
 
 <script>
-    // URL ACTUALIZADA
-    const URL = "https://script.google.com/macros/s/AKfycbxENFCGRyIUjVn2woGebJIbrWxX00HSMSfF0Sc-L112oAH0QuQpx49kMdBecHtVXTPx/exec";
-    let datos = {};
+    // Iniciar fecha por defecto
+    document.getElementById('prod-fecha-manual').valueAsDate = new Date();
 
-    async function cargar() {
-        document.getElementById('loading').style.display = 'flex';
-        try {
-            const r = await fetch(URL);
-            datos = await r.json();
-            document.getElementById('tasa-val').innerText = datos.tasa.toFixed(2);
-            render();
-        } catch(e) {
-            alert("Error al cargar datos");
+    let lotes = JSON.parse(localStorage.getItem('lotes_v5')) || [];
+    let historial = JSON.parse(localStorage.getItem('historial_v5')) || [];
+
+    function crearLote() {
+        const nombreInput = document.getElementById('prod-nombre');
+        const cantInput = document.getElementById('prod-cant');
+        const precioInput = document.getElementById('prod-precio');
+        const fechaInput = document.getElementById('prod-fecha-manual');
+
+        const nombre = nombreInput.value.toUpperCase().trim();
+        const cant = parseInt(cantInput.value);
+        const precio = precioInput.value;
+        const fechaProd = fechaInput.value;
+
+        if(!nombre || isNaN(cant) || !precio || !fechaProd) {
+            alert("⚠️ Por favor, rellena todos los campos correctamente.");
+            return;
         }
-        document.getElementById('loading').style.display = 'none';
+
+        const nuevoLote = {
+            id: Date.now(),
+            nombre: nombre,
+            fechaProd: fechaProd,
+            porciones: Array(cant).fill().map((_, i) => ({
+                id_p: i,
+                precio: precio
+            }))
+        };
+
+        lotes.push(nuevoLote);
+        save();
+        render();
+        
+        // Limpiar
+        nombreInput.value = "";
+        cantInput.value = "";
+        precioInput.value = "";
+        
+        alert("✅ Lote registrado correctamente.");
+        // Opcional: saltar a la pestaña de cobros automáticamente
+        // changeView('pendientes', document.querySelectorAll('.nav-item')[1]);
+    }
+
+    function cobrar(loteId, porcionIdx) {
+        const clienteVal = document.getElementById(`cli-${loteId}-${porcionIdx}`).value.trim();
+        const fechaEntVal = document.getElementById(`fent-${loteId}-${porcionIdx}`).value;
+        
+        if(!clienteVal) {
+            alert("Escribe el nombre del cliente que lleva la porción.");
+            return;
+        }
+
+        const ref = prompt(`Referencia de pago para ${clienteVal}:`);
+        if(ref === null) return;
+
+        const lote = lotes.find(l => l.id === loteId);
+        const p = lote.porciones[porcionIdx];
+
+        historial.unshift({
+            producto: lote.nombre,
+            cliente: clienteVal,
+            precio: p.precio,
+            fechaProd: lote.fechaProd,
+            fechaEnt: fechaEntVal,
+            fechaPago: new Date().toLocaleDateString(),
+            ref: ref || "S/R"
+        });
+
+        lote.porciones.splice(porcionIdx, 1);
+        if(lote.porciones.length === 0) {
+            lotes = lotes.filter(l => l.id !== loteId);
+        }
+
+        save();
+        render();
+    }
+
+    function save() {
+        localStorage.setItem('lotes_v5', JSON.stringify(lotes));
+        localStorage.setItem('historial_v5', JSON.stringify(historial));
     }
 
     function render() {
-        let saldoBancario = parseFloat(datos.saldoInicial) || 0;
-        let tYoDebo = 0, tMeDeben = 0;
-        let htmlDeudas = "";
-        let saldosPorPersona = {};
-
-        // 1. Calcular saldos netos por cada persona en los movimientos
-        datos.movimientos.slice(1).forEach(m => {
-            let tipo = m[1];
-            let persona = m[2];
-            let montoBs = parseFloat(m[3]) || 0;
-
-            if (!saldosPorPersona[persona]) saldosPorPersona[persona] = 0;
-
-            // Lógica de Saldo Principal
-            if (["Venta", "Abono_Cobrado"].includes(tipo)) saldoBancario += montoBs;
-            if (["Gasto", "Abono_Pagado"].includes(tipo)) saldoBancario -= montoBs;
-
-            // Lógica de Deudas Individuales
-            if (["Fiado", "Venta", "Abono_Pagado"].includes(tipo)) saldosPorPersona[persona] += montoBs;
-            if (["Deuda", "Gasto", "Abono_Cobrado"].includes(tipo)) saldosPorPersona[persona] -= montoBs;
-        });
-
-        // 2. Generar lista de deudas (ignorar saldos cercanos a cero)
-        Object.keys(saldosPorPersona).forEach(p => {
-            let saldoPersona = saldosPorPersona[p];
-            if (Math.abs(saldoPersona) > 0.1 && !["GASTO", "VENTA"].includes(p.toUpperCase())) {
-                let esYoDebo = saldoPersona < 0;
-                let montoAbs = Math.abs(saldoPersona);
+        const listaP = document.getElementById('lista-pendientes');
+        const listaH = document.getElementById('lista-historial');
+        
+        listaP.innerHTML = lotes.length === 0 ? "<div style='text-align:center; padding:50px; color:#555'>No hay cobros pendientes</div>" : "";
+        
+        lotes.forEach((l, idxLote) => {
+            let html = `<div class="card">
+                <div class="acordeon-header" onclick="toggleLote(${idxLote})">
+                    <div>
+                        <strong style="color:var(--accent); font-size:16px">${l.nombre}</strong><br>
+                        <small style="color:#666">Hecho el: ${l.fechaProd}</small>
+                    </div>
+                    <div class="status-badge">${l.porciones.length} por cobrar ▾</div>
+                </div>
                 
-                if (esYoDebo) tYoDebo += montoAbs; else tMeDeben += montoAbs;
-
-                htmlDeudas += `
-                <div class="list-item" style="border-color: ${esYoDebo ? 'var(--rose)' : 'var(--amber)'}" onclick="gestionar('${p}', ${montoAbs}, ${esYoDebo})">
-                    <div><b>${p}</b><br><small>${esYoDebo ? 'Deuda Pendiente' : 'Fiado Pendiente'}</small></div>
-                    <div style="text-align:right">
-                        <b style="color: ${esYoDebo ? 'var(--rose)' : 'var(--amber)'}">${montoAbs.toFixed(2)} Bs</b><br>
-                        <small style="color:var(--cyan)">$${(montoAbs/datos.tasa).toFixed(2)}</small>
+                <div id="lote-det-${idxLote}" class="hidden" style="margin-top:20px; border-top: 1px solid #333; padding-top:10px">`;
+            
+            l.porciones.forEach((p, idx) => {
+                html += `<div class="portion-item">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" id="cli-${l.id}-${idx}" placeholder="¿Quién lo debe?" style="margin-bottom:10px">
+                    <div style="display:flex; gap:10px; align-items:flex-end">
+                        <div style="flex:1">
+                            <label>Fecha de Entrega</label>
+                            <input type="date" id="fent-${l.id}-${idx}" value="${new Date().toISOString().split('T')[0]}" style="margin:0">
+                        </div>
+                        <button class="btn-check" onclick="cobrar(${l.id}, ${idx})">OK</button>
                     </div>
                 </div>`;
-            }
+            });
+            html += `</div></div>`;
+            listaP.innerHTML += html;
         });
 
-        document.getElementById('saldo-bs').innerText = saldoBancario.toFixed(2) + " Bs";
-        document.getElementById('me-deben').innerText = tMeDeben.toFixed(2) + " Bs";
-        document.getElementById('yo-debo').innerText = tYoDebo.toFixed(2) + " Bs";
-        document.getElementById('lista-deudas').innerHTML = htmlDeudas || "<p style='text-align:center; color:gray'>Sin cuentas pendientes</p>";
+        listaH.innerHTML = "";
+        historial.forEach((h, i) => {
+            listaH.innerHTML += `<div class="card" onclick="toggleHist(${i})">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <span><b>${h.producto}</b><br><small>${h.cliente}</small></span>
+                    <span style="color:var(--success); font-weight:bold">$${h.precio} ▾</span>
+                </div>
+                <div id="hist-det-${i}" class="hidden hist-content">
+                    <strong>Ref:</strong> <span style="color:var(--accent)">${h.ref}</span><br>
+                    <strong>Preparación:</strong> ${h.fechaProd}<br>
+                    <strong>Entregado:</strong> ${h.fechaEnt}<br>
+                    <strong>Cobrado:</strong> ${h.fechaPago}
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('btn-borrar-hist').classList.toggle('hidden', historial.length < 45);
     }
 
-    function gestionar(nombre, monto, esDeuda) {
-        let op = prompt(`${nombre} (${monto.toFixed(2)} Bs)\n\n1. REGISTRAR ABONO\n2. LIQUIDAR TOTAL\n3. SUMAR A LA CUENTA`, "1");
-        if (op == "1") {
-            let a = prompt("Monto del abono en Bs:");
-            if (a) enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, a);
-        } else if (op == "2") {
-            if(confirm(`¿Confirmas el pago total de ${monto.toFixed(2)} Bs?`)) {
-                enviar(esDeuda ? "Abono_Pagado" : "Abono_Cobrado", nombre, monto);
-            }
-        } else if (op == "3") {
-            let s = prompt("Monto a sumar en Bs:");
-            if (s) enviar(esDeuda ? "Deuda" : "Fiado", nombre, s);
+    function toggleLote(idx) {
+        document.getElementById(`lote-det-${idx}`).classList.toggle('hidden');
+    }
+
+    function toggleHist(i) {
+        document.getElementById(`hist-det-${i}`).classList.toggle('hidden');
+    }
+
+    function changeView(view, el) {
+        document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+        document.getElementById('view-' + view).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('app-title').innerText = view === 'nueva' ? 'PRODUCCIÓN' : (view === 'pendientes' ? 'COBROS' : 'HISTORIAL');
+    }
+
+    function borrarHistorial() {
+        if(confirm("¿Estás seguro de que quieres vaciar el historial?")) { 
+            historial = []; 
+            save(); 
+            render(); 
         }
     }
 
-    async function enviar(tipo, persona, monto) {
-        let desc = prompt("Descripción / Concepto:", "Registro Touch");
-        document.getElementById('loading').style.display = 'flex';
-        try {
-            await fetch(URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ 
-                    tipo: tipo, 
-                    persona: persona.toUpperCase(), 
-                    monto: parseFloat(monto), 
-                    tasa: datos.tasa, 
-                    descripcion: desc 
-                })
-            });
-            setTimeout(() => { location.reload(); }, 800);
-        } catch(e) {
-            alert("Error al enviar");
-            document.getElementById('loading').style.display = 'none';
-        }
-    }
-
-    function nuevo(tipo) {
-        let p = prompt("Nombre:");
-        if (!p) return;
-        let m = prompt("Monto en Bs:");
-        if (m) enviar(tipo, p, m);
-    }
-
-    cargar();
+    render();
 </script>
 </body>
 </html>
