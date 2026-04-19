@@ -155,7 +155,7 @@
                 </div>
                 <div style="flex:1">
                     <label>Inversión Lote ($)</label>
-                    <input type="number" id="prod-costo-total" placeholder="10.0">
+                    <input type="number" id="prod-costo-total" placeholder="Opcional">
                 </div>
             </div>
 
@@ -219,7 +219,7 @@
             porciones: Array(cant).fill().map((_, i) => ({
                 id_p: i,
                 precio: precio,
-                costoIndiv: (costoTotal / cant).toFixed(2)
+                costoIndiv: costoTotal > 0 ? (costoTotal / cant).toFixed(2) : 0
             }))
         };
 
@@ -244,7 +244,7 @@
             producto: lote.nombre,
             cliente: clienteVal,
             precio: p.precio,
-            ganancia: (p.precio - p.costoIndiv).toFixed(2),
+            ganancia: p.costoIndiv > 0 ? (p.precio - p.costoIndiv).toFixed(2) : p.precio,
             ref: ref || "S/R",
             fechaPago: new Date().toLocaleDateString()
         });
@@ -254,19 +254,16 @@
         if(lote.porciones.length === 0) {
             const totalRecaudado = lote.cantTotal * p.precio;
             const inversionLote = lote.costoLote;
-            const gananciaNeta = totalRecaudado - inversionLote;
             
-            alert(`🎉 ¡LOTE TERMINADO!
-----------------------------------
-📦 Producto: ${lote.nombre}
-💵 Costo por porción: $${p.costoIndiv}
-✅ Porciones vendidas: (${lote.cantTotal})
-----------------------------------
-💰 TOTAL RECAUDADO: $${totalRecaudado.toFixed(2)}
-📉 COSTO DE PRODUCCIÓN: $${inversionLote.toFixed(2)}
-✨ GANANCIA NETA: $${gananciaNeta.toFixed(2)}
-----------------------------------
-¡Excelente trabajo!`);
+            let mensaje = `🎉 ¡LOTE TERMINADO!\n----------------------------------\n📦 Producto: ${lote.nombre}\n✅ Vendidas: (${lote.cantTotal})\n💰 TOTAL RECAUDADO: $${totalRecaudado.toFixed(2)}`;
+            
+            if(inversionLote > 0) {
+                const gananciaNeta = totalRecaudado - inversionLote;
+                mensaje += `\n💵 Costo por porción: $${p.costoIndiv}\n📉 COSTO PRODUCCIÓN: $${inversionLote.toFixed(2)}\n✨ GANANCIA NETA: $${gananciaNeta.toFixed(2)}`;
+            }
+            
+            mensaje += `\n----------------------------------\n¡Excelente trabajo!`;
+            alert(mensaje);
 
             lotes = lotes.filter(l => l.id !== loteId);
         }
@@ -305,7 +302,7 @@
                 <div class="acordeon-header" onclick="toggleLote(${idxLote})">
                     <div>
                         <strong style="color:var(--accent); font-size:16px">${l.nombre}</strong><br>
-                        <small style="color:#666">Costo Lote: $${l.costoLote}</small>
+                        <small style="color:#666">${l.costoLote > 0 ? 'Costo Lote: $' + l.costoLote : 'Sin inversión reg.'}</small>
                     </div>
                     <div class="status-badge">RESTAN: ${l.porciones.length}<br>VENDIDAS: ${l.vendidas}</div>
                 </div>
@@ -322,9 +319,9 @@
                     <input type="text" id="cli-${l.id}-${idx}" placeholder="Nombre del cliente">
                     
                     <div class="resumen-dinero">
-                        <span>Costo: <b style="color:var(--danger)">$${p.costoIndiv}</b></span>
+                        ${l.costoLote > 0 ? `<span>Costo: <b style="color:var(--danger)">$${p.costoIndiv}</b></span>` : ''}
                         <span>Venta: <b style="color:var(--success)">$${p.precio}</b></span>
-                        <span>Ganancia: <b style="color:var(--accent)">$${(p.precio - p.costoIndiv).toFixed(2)}</b></span>
+                        ${l.costoLote > 0 ? `<span>Ganancia: <b style="color:var(--accent)">$${(p.precio - p.costoIndiv).toFixed(2)}</b></span>` : ''}
                     </div>
 
                     <div style="display:flex; gap:10px; align-items:flex-end">
@@ -341,7 +338,7 @@
         historial.forEach(h => {
             listaH.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between">
                 <span><b>${h.producto}</b><br><small>${h.cliente}</small></span>
-                <span style="color:var(--success); font-weight:bold">+$${h.ganancia}</span>
+                <span style="color:var(--success); font-weight:bold">+$${h.precio}</span>
             </div></div>`;
         });
         document.getElementById('btn-borrar-hist').classList.toggle('hidden', historial.length < 45);
